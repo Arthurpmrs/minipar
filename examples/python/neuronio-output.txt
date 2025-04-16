@@ -1,0 +1,257 @@
+Entrada: 1 Desejado: 0
+#### Iteração: 1
+Peso: 0.5
+Saída: 1
+Erro: -1
+Peso do bias: 0.5
+#### Iteração: 2
+Peso: 0.49
+Saída: 1
+Erro: -1
+Peso do bias: 0.49
+#### Iteração: 3
+Peso: 0.48
+Saída: 1
+Erro: -1
+Peso do bias: 0.48
+#### Iteração: 4
+Peso: 0.47
+Saída: 1
+Erro: -1
+Peso do bias: 0.47
+#### Iteração: 5
+Peso: 0.45999999999999996
+Saída: 1
+Erro: -1
+Peso do bias: 0.45999999999999996
+#### Iteração: 6
+Peso: 0.44999999999999996
+Saída: 1
+Erro: -1
+Peso do bias: 0.44999999999999996
+#### Iteração: 7
+Peso: 0.43999999999999995
+Saída: 1
+Erro: -1
+Peso do bias: 0.43999999999999995
+#### Iteração: 8
+Peso: 0.42999999999999994
+Saída: 1
+Erro: -1
+Peso do bias: 0.42999999999999994
+#### Iteração: 9
+Peso: 0.41999999999999993
+Saída: 1
+Erro: -1
+Peso do bias: 0.41999999999999993
+#### Iteração: 10
+Peso: 0.4099999999999999
+Saída: 1
+Erro: -1
+Peso do bias: 0.4099999999999999
+#### Iteração: 11
+Peso: 0.3999999999999999
+Saída: 1
+Erro: -1
+Peso do bias: 0.3999999999999999
+#### Iteração: 12
+Peso: 0.3899999999999999
+Saída: 1
+Erro: -1
+Peso do bias: 0.3899999999999999
+#### Iteração: 13
+Peso: 0.3799999999999999
+Saída: 1
+Erro: -1
+Peso do bias: 0.3799999999999999
+#### Iteração: 14
+Peso: 0.3699999999999999
+Saída: 1
+Erro: -1
+Peso do bias: 0.3699999999999999
+#### Iteração: 15
+Peso: 0.3599999999999999
+Saída: 1
+Erro: -1
+Peso do bias: 0.3599999999999999
+#### Iteração: 16
+Peso: 0.34999999999999987
+Saída: 1
+Erro: -1
+Peso do bias: 0.34999999999999987
+#### Iteração: 17
+Peso: 0.33999999999999986
+Saída: 1
+Erro: -1
+Peso do bias: 0.33999999999999986
+#### Iteração: 18
+Peso: 0.32999999999999985
+Saída: 1
+Erro: -1
+Peso do bias: 0.32999999999999985
+#### Iteração: 19
+Peso: 0.31999999999999984
+Saída: 1
+Erro: -1
+Peso do bias: 0.31999999999999984
+#### Iteração: 20
+Peso: 0.30999999999999983
+Saída: 1
+Erro: -1
+Peso do bias: 0.30999999999999983
+#### Iteração: 21
+Peso: 0.2999999999999998
+Saída: 1
+Erro: -1
+Peso do bias: 0.2999999999999998
+#### Iteração: 22
+Peso: 0.2899999999999998
+Saída: 1
+Erro: -1
+Peso do bias: 0.2899999999999998
+#### Iteração: 23
+Peso: 0.2799999999999998
+Saída: 1
+Erro: -1
+Peso do bias: 0.2799999999999998
+#### Iteração: 24
+Peso: 0.2699999999999998
+Saída: 1
+Erro: -1
+Peso do bias: 0.2699999999999998
+#### Iteração: 25
+Peso: 0.2599999999999998
+Saída: 1
+Erro: -1
+Peso do bias: 0.2599999999999998
+#### Iteração: 26
+Peso: 0.24999999999999978
+Saída: 1
+Erro: -1
+Peso do bias: 0.24999999999999978
+#### Iteração: 27
+Peso: 0.23999999999999977
+Saída: 1
+Erro: -1
+Peso do bias: 0.23999999999999977
+#### Iteração: 28
+Peso: 0.22999999999999976
+Saída: 1
+Erro: -1
+Peso do bias: 0.22999999999999976
+#### Iteração: 29
+Peso: 0.21999999999999975
+Saída: 1
+Erro: -1
+Peso do bias: 0.21999999999999975
+#### Iteração: 30
+Peso: 0.20999999999999974
+Saída: 1
+Erro: -1
+Peso do bias: 0.20999999999999974
+#### Iteração: 31
+Peso: 0.19999999999999973
+Saída: 1
+Erro: -1
+Peso do bias: 0.19999999999999973
+#### Iteração: 32
+Peso: 0.18999999999999972
+Saída: 1
+Erro: -1
+Peso do bias: 0.18999999999999972
+#### Iteração: 33
+Peso: 0.17999999999999972
+Saída: 1
+Erro: -1
+Peso do bias: 0.17999999999999972
+#### Iteração: 34
+Peso: 0.1699999999999997
+Saída: 1
+Erro: -1
+Peso do bias: 0.1699999999999997
+#### Iteração: 35
+Peso: 0.1599999999999997
+Saída: 1
+Erro: -1
+Peso do bias: 0.1599999999999997
+#### Iteração: 36
+Peso: 0.1499999999999997
+Saída: 1
+Erro: -1
+Peso do bias: 0.1499999999999997
+#### Iteração: 37
+Peso: 0.13999999999999968
+Saída: 1
+Erro: -1
+Peso do bias: 0.13999999999999968
+#### Iteração: 38
+Peso: 0.12999999999999967
+Saída: 1
+Erro: -1
+Peso do bias: 0.12999999999999967
+#### Iteração: 39
+Peso: 0.11999999999999968
+Saída: 1
+Erro: -1
+Peso do bias: 0.11999999999999968
+#### Iteração: 40
+Peso: 0.10999999999999968
+Saída: 1
+Erro: -1
+Peso do bias: 0.10999999999999968
+#### Iteração: 41
+Peso: 0.09999999999999969
+Saída: 1
+Erro: -1
+Peso do bias: 0.09999999999999969
+#### Iteração: 42
+Peso: 0.08999999999999969
+Saída: 1
+Erro: -1
+Peso do bias: 0.08999999999999969
+#### Iteração: 43
+Peso: 0.0799999999999997
+Saída: 1
+Erro: -1
+Peso do bias: 0.0799999999999997
+#### Iteração: 44
+Peso: 0.0699999999999997
+Saída: 1
+Erro: -1
+Peso do bias: 0.0699999999999997
+#### Iteração: 45
+Peso: 0.0599999999999997
+Saída: 1
+Erro: -1
+Peso do bias: 0.0599999999999997
+#### Iteração: 46
+Peso: 0.0499999999999997
+Saída: 1
+Erro: -1
+Peso do bias: 0.0499999999999997
+#### Iteração: 47
+Peso: 0.039999999999999696
+Saída: 1
+Erro: -1
+Peso do bias: 0.039999999999999696
+#### Iteração: 48
+Peso: 0.029999999999999694
+Saída: 1
+Erro: -1
+Peso do bias: 0.029999999999999694
+#### Iteração: 49
+Peso: 0.01999999999999969
+Saída: 1
+Erro: -1
+Peso do bias: 0.01999999999999969
+#### Iteração: 50
+Peso: 0.009999999999999691
+Saída: 1
+Erro: -1
+Peso do bias: 0.009999999999999691
+#### Iteração: 51
+Peso: -3.0878077872387166e-16
+Saída: 0
+Erro: 0
+Parabéns!!! A Rede de um Neurônio Aprendeu
+Valor desejadao: 0

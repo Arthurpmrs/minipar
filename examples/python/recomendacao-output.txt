@@ -1,0 +1,24 @@
+Bem-vindo ao Sistema de Recomendação de E-commerce
+Usuários disponíveis: ['user1', 'user2', 'user3', 'user4']
+Digite o usuário para o qual deseja recomendações (ou 'sair' #para finalizar): user1
+Similaridade entre user1 e user2: 0.9759000729485332
+Similaridade entre user1 e user3: 0.31622776601683794
+Similaridade entre user1 e user4: 0.9922778767136677
+Recomendações para user1: ['product2']
+Digite o usuário para o qual deseja recomendações (ou 'sair' #para finalizar): user2
+Similaridade entre user2 e user1: 0.9759000729485332
+Similaridade entre user2 e user3: 0.5976143046671968
+Similaridade entre user2 e user4: 0.8944271909999159
+Recomendações para user2: []
+Digite o usuário para o qual deseja recomendações (ou 'sair' #para finalizar): user3
+Similaridade entre user3 e user1: 0.31622776601683794
+Similaridade entre user3 e user2: 0.9999999999999999
+Similaridade entre user3 e user4: 0.7071067811865475
+Recomendações para user3: ['product1']
+Digite o usuário para o qual deseja recomendações (ou 'sair' #para finalizar): user4
+Similaridade entre user4 e user1: 0.9922778767136677
+Similaridade entre user4 e user2: 0.8944271909999159
+Similaridade entre user4 e user3: 0.7071067811865475
+Recomendações para user4: ['product2']
+Digite o usuário para o qual deseja recomendações (ou 'sair' #para finalizar): sair
+Saindo do sistema de recomendação.

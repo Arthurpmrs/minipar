@@ -1,0 +1,4 @@
+Input: [0, 0], Predicted Output: 0.021994961674800386
+Input: [0, 1], Predicted Output: 0.982300633943269
+Input: [1, 0], Predicted Output: 0.9823287042293624
+Input: [1, 1], Predicted Output: 0.017329005774336027

@@ -1,0 +1,9 @@
+==== Ordenação com Quicksort ====
+Insira os elementos do vetor separados por espaço:
+2 4 1 -4 -7 9 10 -20
+Vetor original: [2, 4, 1, -4, -7, 9, 10, -20]
+Vetor ordenado: [-20, -7, -4, 1, 2, 4, 9, 10]
+
+
+** Process exited - Return Code: 0 **
+Press Enter to exit terminal
