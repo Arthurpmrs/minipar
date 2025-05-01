@@ -3,7 +3,7 @@ from copy import deepcopy
 from symtable import Symbol
 
 from minipar import ast
-from minipar.lexer import STATEMENT_TOKENS, Lexer, NextToken
+from minipar.lexer import Lexer, NextToken
 from minipar.symbol import SymTable
 from minipar.token import Token
 
@@ -21,6 +21,22 @@ DEFAULT_FUNCTION_NAMES = {
     'isnum': 'BOOL',
 }
 
+STATEMENT_TOKENS = {
+    'ID',
+    'FUNC',
+    'IF',
+    'ELSE',
+    'WHILE',
+    'RETURN',
+    'BREAK',
+    'CONTINUE',
+    'SEQ',
+    'PAR',
+    'C_CHANNEL',
+    'S_CHANNEL',
+    'VAR',
+}
+
 
 class Parser(ABC):
     @abstractmethod
@@ -34,8 +50,8 @@ class Parser(ABC):
 
 class ParserImpl(Parser):
     def __init__(self, lexer: Lexer):
-        self.lexer: NextToken = lexer.scan()
-        self.lookahead, self.line = next(self.lexer)
+        self.token_generator: NextToken = lexer.scan()
+        self.lookahead, self.line = next(self.token_generator)
         self.symtable = SymTable()
         for func_name in DEFAULT_FUNCTION_NAMES.keys():
             self.symtable.insert(func_name, Symbol(func_name, 'FUNC'))
@@ -45,7 +61,7 @@ class ParserImpl(Parser):
             # Se label corresponde, tenta pegar o próximo token
             # ou retorna Token de EOF
             try:
-                self.lookahead, self.line = next(self.lexer)
+                self.lookahead, self.line = next(self.token_generator)
             except StopIteration:
                 self.lookahead = Token('EOF', 'EOF')
             return True
@@ -63,7 +79,7 @@ class ParserImpl(Parser):
         while self.lookahead.label in STATEMENT_TOKENS:
             body.append(self.stmt())
 
-        if self.lookahead.label not in {'}', 'EOF'}:
+        if self.lookahead.label not in {'RIGHT_BRACE', 'EOF'}:
             raise Exception(
                 self.line,
                 f'{self.lookahead.value} não inicia uma instrução válida',
@@ -110,97 +126,100 @@ class ParserImpl(Parser):
 
         # match self.lookahead.label:
         #     case 'EQ':
-                
+
     def logic_or(self) -> ast.Expression:
         expr = self.logic_and()
 
-        while(self.lookahead.label == "OR"):
+        while self.lookahead.label == 'OR':
             operator = self.lookahead
-            self.match("OR")
+            self.match('OR')
             right = self.logic_and()
-            expr = ast.Logical("BOOL", operator, expr, right)
+            expr = ast.Logical('BOOL', operator, expr, right)
 
         return expr
-    
+
     def logic_and(self) -> ast.Expression:
         expr = self.equality()
-        
-        while(self.lookahead.label == "AND"):
+
+        while self.lookahead.label == 'AND':
             operator = self.lookahead
-            self.match("AND")
+            self.match('AND')
             right = self.equality()
-            expr = ast.Logical("BOOL", operator, expr, right)
+            expr = ast.Logical('BOOL', operator, expr, right)
 
         return expr
-    
+
     def equality(self) -> ast.Expression:
         expr = self.comp()
 
-        while self.lookahead.label in ["EQUAL_EQUAL", "NOT_EQUAL"]:
+        while self.lookahead.label in {'EQUAL_EQUAL', 'NOT_EQUAL'}:
             operator = self.lookahead
             self.match(self.lookahead.label)
             right = self.comp()
-            expr = ast.Relational("BOOL", operator, expr, right)
-        
+            expr = ast.Relational('BOOL', operator, expr, right)
+
         return expr
-    
+
     def comp(self) -> ast.Expression:
         expr = self.sum()
 
-        while self.lookahead.label in ["LESS_EQUAL", "GREATER_EQUAL", "GRATER", "LESS"]:
+        while self.lookahead.label in {
+            'LESS_EQUAL',
+            'GREATER_EQUAL',
+            'GRATER',
+            'LESS',
+        }:
             operator = self.lookahead
             self.match(self.lookahead.label)
             right = self.sum()
-            expr = ast.Relational("BOOL", operator, expr, right)
-        
+            expr = ast.Relational('BOOL', operator, expr, right)
+
         return expr
 
     def sum(self) -> ast.Expression:
         expr = self.term()
 
-        while self.lookahead.label in ["PLUS", "MINUS"]:
+        while self.lookahead.label in {'PLUS', 'MINUS'}:
             operator = self.lookahead
             self.match(self.lookahead.label)
             right = self.term()
             expr = ast.Arithmetic(expr.left.type, operator, expr, right)
-        
-        return expr
-    
 
+        return expr
 
     def term(self) -> ast.Expression:
         expr = self.unary()
 
-        while self.lookahead.label in ["SLASH", "STAR", "MOD"]:
+        while self.lookahead.label in {'SLASH', 'STAR', 'MOD'}:
             operator = self.lookahead
             self.match(self.lookahead.label)
             right = self.unary()
             expr = ast.Arithmetic(expr.left.type, operator, expr, right)
         return expr
-    
+
     def unary(self) -> ast.Expression:
-        if self.lookahead.label in ["BANG", "MINUS"]:
+        if self.lookahead.label in {'BANG', 'MINUS'}:
             operator = self.lookahead
             self.match(self.lookahead.label)
             right = self.unary()
-            return ast.Unary("EXPR", operator, right)
-        
+            return ast.Unary('EXPR', operator, right)
+
         return self.primary()
 
     def primary(self) -> ast.Expression:
         match self.lookahead.label:
-            case "FALSE":
-                expr = ast.Constant("BOOL", self.lookahead)
-                self.match("FALSE")
-            case "TRUE":
-                expr = ast.Constant("BOOL", self.lookahead)
-                self.match("TRUE")
-            case "STRING":
-                expr = ast.Constant("STRING", self.lookahead)
-                self.match("STRING")
-            case "NUMBER":
-                expr = ast.Constant("NUMBER", self.lookahead)
-                self.match("NUMBER")
-            case "SEILA MEU IRMAO":
+            case 'FALSE':
+                expr = ast.Constant('BOOL', self.lookahead)
+                self.match('FALSE')
+            case 'TRUE':
+                expr = ast.Constant('BOOL', self.lookahead)
+                self.match('TRUE')
+            case 'STRING':
+                expr = ast.Constant('STRING', self.lookahead)
+                self.match('STRING')
+            case 'NUMBER':
+                expr = ast.Constant('NUMBER', self.lookahead)
+                self.match('NUMBER')
+            case '(':
                 pass
         return expr

@@ -9,24 +9,14 @@ TOKEN_PATTERNS = [
     ('NUMBER', r'\b\d+\.\d+|\.\d+|\d+\b'),
     ('RARROW', r'->'),
     ('STRING', r'"([^"]*)"'),
-    ('LINECOMMENT', r'#.*'),
-    ('BLOCKCOMMENT', r'/\*[\s\S]*?\*/'),
+    ('LINE_COMMENT', r'#.*'),
+    ('BLOCK_COMMENT', r'/\*[\s\S]*?\*/'),
     ('OR', r'\|\|'),
     ('AND', r'&&'),
     ('EQUAL_EQUAL', r'=='),
     ('NOT_EQUAL', r'!='),
     ('LESS_EQUAL', r'<='),
     ('GREATER_EQUAL', r'>='),
-    ('GRATER', r'>'),
-    ('LESS', r'<'),
-    ('PLUS', r'\+'),
-    ('MINUS', r'-'),
-    ('STAR', r'\*'),
-    ('SLASH', r'/'),
-    ('BANG', r'!'),
-    ('MOD', r'%'),
-    ('FALSE', r'false'),
-    ('TRUE', r'true'),
     ('NEWLINE', r'\n'),
     ('WHITESPACE', r'\s+'),
     ('OTHER', r'.'),
@@ -35,22 +25,6 @@ TOKEN_PATTERNS = [
 TOKEN_REGEX = '|'.join(
     f'(?P<{name}>{pattern})' for name, pattern in TOKEN_PATTERNS
 )
-
-STATEMENT_TOKENS = {
-    'ID',
-    'FUNC',
-    'IF',
-    'ELSE',
-    'WHILE',
-    'RETURN',
-    'BREAK',
-    'CONTINUE',
-    'SEQ',
-    'PAR',
-    'C_CHANNEL',
-    'S_CHANNEL',
-    'VAR',
-}
 
 type NextToken = Generator[tuple[Token, int]]
 
@@ -86,6 +60,25 @@ class LexerImpl(Lexer):
             'seq': 'SEQ',
             'c_channel': 'C_CHANNEL',
             's_channel': 'S_CHANNEL',
+            'var': 'VAR',
+            '=': 'EQUAL',
+            '>': 'GREATER',
+            '<': 'LESS',
+            '!': 'BANG',
+            '+': 'PLUS',
+            '-': 'MINUS',
+            '*': 'STAR',
+            '/': 'SLASH',
+            '%': 'MOD',
+            '(': 'LEFT_PARENTHESIS',
+            ')': 'RIGHT_PARENTHESIS',
+            '{': 'LEFT_BRACE',
+            '}': 'RIGHT_BRACE',
+            '[': 'LEFT_BRACKET',
+            ']': 'RIGHT_BRACKET',
+            '.': 'DOT',
+            ':': 'COLON',
+            ',': 'COMMA',
         }
 
     def scan(self) -> NextToken:
@@ -95,9 +88,9 @@ class LexerImpl(Lexer):
             token_label = match.lastgroup
             token_value = match.group()
 
-            if token_label in {'WHITESPACE', 'LINECOMMENT'}:
+            if token_label in {'WHITESPACE', 'LINE_COMMENT'}:
                 continue
-            elif token_label == 'BLOCKCOMMENT':
+            elif token_label == 'BLOCK_COMMENT':
                 self.line += token_value.count('\n')
                 continue
             elif token_label == 'NEWLINE':
@@ -108,6 +101,6 @@ class LexerImpl(Lexer):
             elif token_label == 'STRING':
                 token_value = token_value.replace('"', '')
             elif token_label == 'OTHER':
-                token_label = token_value
+                token_label = self.token_labels.get(token_value, token_value)
 
             yield Token(token_label, token_value), self.line
