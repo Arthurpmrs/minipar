@@ -229,10 +229,19 @@ class ParserImpl(Parser):
 
     def expression(self) -> ast.Expression:
         expr = self.logic_or()
-        return expr
 
-        # match self.lookahead.label:
-        #     case 'EQ':
+        if self.match('EQUAL'):
+            right = self.expression()
+
+            if isinstance(expr, ast.Assignable):
+                return ast.Assign(left=expr, right=right)
+
+            raise Exception(
+                self.line,
+                f'{expr.token.value} não pode ser usada para atribuição.',
+            )
+
+        return expr
 
     def logic_or(self) -> ast.Expression:
         expr = self.logic_and()
@@ -399,7 +408,7 @@ class ParserImpl(Parser):
 
     def index(self, ID: ast.ID) -> ast.Expression:
         self.match('LEFT_BRACKET')
-        expr = ast.Access('', ID.token, ID, self.sum())
+        expr = ast.Access(ID.type, ID.token, ID, self.sum())
         if not self.match('RIGHT_BRACKET'):
             raise Exception(
                 self.line,

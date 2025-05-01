@@ -41,12 +41,17 @@ class Constant(Expression):
 
 
 @dataclass
-class ID(Expression):
+class Assignable(Expression):
+    pass
+
+
+@dataclass
+class ID(Assignable):
     decl: bool = False
 
 
 @dataclass
-class Access(Expression):
+class Access(Assignable):
     id: ID
     expr: Expression
 
@@ -88,7 +93,7 @@ class Program(Statement):
 
 @dataclass
 class Assign(Statement):
-    left: Expression
+    left: Assignable
     right: Expression
 
 
