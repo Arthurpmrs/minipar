@@ -1,20 +1,5 @@
 from minipar.lexer import LexerImpl
 
-STATEMENT_TOKENS = {
-    'ID',
-    'FUNC',
-    'IF',
-    'ELSE',
-    'WHILE',
-    'RETURN',
-    'BREAK',
-    'CONTINUE',
-    'SEQ',
-    'PAR',
-    'C_CHANNEL',
-    'S_CHANNEL',
-}
-
 if __name__ == '__main__':
     path_to_source = './examples/minipar/ex9.minipar'
 

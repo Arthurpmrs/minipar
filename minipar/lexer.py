@@ -26,6 +26,22 @@ TOKEN_REGEX = '|'.join(
     f'(?P<{name}>{pattern})' for name, pattern in TOKEN_PATTERNS
 )
 
+STATEMENT_TOKENS = {
+    'ID',
+    'FUNC',
+    'IF',
+    'ELSE',
+    'WHILE',
+    'RETURN',
+    'BREAK',
+    'CONTINUE',
+    'SEQ',
+    'PAR',
+    'C_CHANNEL',
+    'S_CHANNEL',
+    'VAR',
+}
+
 type NextToken = Generator[tuple[Token, int]]
 
 
