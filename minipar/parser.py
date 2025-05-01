@@ -26,6 +26,7 @@ STATEMENT_TOKENS = {
     'IF',
     'ELSE',
     'WHILE',
+    'FOR',
     'RETURN',
     'BREAK',
     'CONTINUE',
@@ -89,14 +90,111 @@ class ParserImpl(Parser):
         return body
 
     def stmt(self) -> ast.Statement:
-        return self.expression()
+        match self.lookahead.label:
+            case 'VAR':
+                node = self.declaration()
+            case 'IF':
+                self.match('IF')
+                if not self.match('LEFT_PARENTHESIS'):
+                    raise Exception(
+                        self.line,
+                        f'esperando ( no lugar de {self.lookahead.value}',
+                    )
+
+                cond = self.expression()
+
+                if not self.match('RIGHT_PARENTHESIS'):
+                    raise Exception(
+                        self.line,
+                        f'esperando ) no lugar de {self.lookahead.value}',
+                    )
+                block: ast.Body = self.block()
+
+                _else = None
+                if self.lookahead == 'ELSE':
+                    self.match('ELSE')
+                    _else = self.block()
+
+                return ast.If(condition=cond, body=block, else_stmt=_else)
+            case 'WHILE':
+                self.match('WHILE')
+                if not self.match('LEFT_PARENTHESIS'):
+                    raise Exception(
+                        self.line,
+                        f'esperando ( no lugar de {self.lookahead.value}',
+                    )
+
+                cond = self.expression()
+
+                if not self.match('RIGHT_PARENTHESIS'):
+                    raise Exception(
+                        self.line,
+                        f'esperando ) no lugar de {self.lookahead.value}',
+                    )
+                block: ast.Body = self.block()
+                return ast.While(condition=cond, body=block)
+            case 'FOR':
+                self.match('FOR')
+                if not self.match('LEFT_PARENTHESIS'):
+                    raise Exception(
+                        self.line,
+                        f'esperando ( no lugar de {self.lookahead.value}',
+                    )
+
+                iterator = self.declaration()
+
+                if not self.match('IN'):
+                    raise Exception(
+                        self.line,
+                        f'esperando "in" no lugar de {self.lookahead.value}',
+                    )
+
+                iterable = self.expression()
+
+                if not self.match('RIGHT_PARENTHESIS'):
+                    raise Exception(
+                        self.line,
+                        f'esperando ) no lugar de {self.lookahead.value}',
+                    )
+                block = self.block()
+                return ast.For(iterator, iterable, block)
+            case _:
+                node = self.expression()
+
+        return node
+
+    def block(self, params: ast.Parameters | None = None) -> ast.Body:
+        if not self.match('LEFT_BRACE'):
+            raise Exception(
+                self.line,
+                f'esperando {{ no lugar de {self.lookahead.value}',
+            )
+
+        outer = self.symtable
+        self.symtable = SymTable(prev=outer)
+
+        # Define function parameters in the local scope
+        if params:
+            for name, (_type, _) in params.items():
+                self.symtable.insert(name, Symbol(name, _type))
+
+        body: ast.Body = self.stmts()
+
+        if not self.match('RIGHT_BRACE'):
+            raise Exception(
+                self.line,
+                f'esperando }} no lugar de {self.lookahead.value}',
+            )
+
+        self.symtable = outer
+        return body
 
     def declaration(self) -> ast.Assign:
         # declaration -> var ID : TYPE = expression
         self.match('VAR')
-        name = deepcopy(self.lookahead)
+        name = deepcopy(self.lookahead.value)
         self.match('ID')
-        if not self.match(':'):
+        if not self.match('COLON'):
             raise Exception(
                 self.line,
                 f'Esperado : no lugar de {self.lookahead.value}',
@@ -114,13 +212,20 @@ class ParserImpl(Parser):
             )
         left = ast.ID(type=_type.upper(), token=name, decl=True)
 
-        if not self.match('='):
-            raise Exception(
-                self.line,
-                f'Esperado = no lugar de {self.lookahead.value}',
-            )
-        right: ast.Expression = self.disjunction()
-        return ast.Assign(left=left, right=right)
+        if self.match('EQUAL'):
+            right: ast.Expression = self.logic_or()
+            node = ast.Declaration(left=left, right=right)
+        else:
+            node = ast.Declaration(left=left, right=None)
+
+        # if not self.match('EQUAL'):
+        #     raise Exception(
+        #         self.line,
+        #         f'Esperado = no lugar de {self.lookahead.value}',
+        #     )
+        # right: ast.Expression = self.logic_or()
+        # return ast.Assign(left=left, right=right)
+        return node
 
     def expression(self) -> ast.Expression:
         expr = self.logic_or()
@@ -168,7 +273,7 @@ class ParserImpl(Parser):
         while self.lookahead.label in {
             'LESS_EQUAL',
             'GREATER_EQUAL',
-            'GRATER',
+            'GREATER',
             'LESS',
         }:
             operator = self.lookahead
@@ -240,10 +345,10 @@ class ParserImpl(Parser):
                         self.line,
                         f'esperando ] no lugar de {self.lookahead.value}',
                     )
-            case 'LEFT_CURLY':
-                self.match('LEFT_CURLY')
+            case 'LEFT_BRACE':
+                self.match('LEFT_BRACE')
                 expr = self.list_literal()
-                if not self.match('RIGHT_CURLY'):
+                if not self.match('RIGHT_BRACE'):
                     raise Exception(
                         self.line,
                         f'esperando ] no lugar de {self.lookahead.value}',
@@ -257,11 +362,10 @@ class ParserImpl(Parser):
         token = self.lookahead
         self.match('ID')
 
-        # s: Symbol | None = self.symtable.find(token.value)
-        # if not s:
-        #     raise Exception(self.line, f'variável {token.value} não declarada')
-        # expr = ast.ID(type=s.type.upper(), token=token)
-        expr = ast.ID(type='', token=token)
+        s: Symbol | None = self.symtable.find(token.value)
+        if not s:
+            raise Exception(self.line, f'variável {token.value} não declarada')
+        expr = ast.ID(type=s.type.upper(), token=token)
 
         operations = ''
         while True:

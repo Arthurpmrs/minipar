@@ -93,6 +93,12 @@ class Assign(Statement):
 
 
 @dataclass
+class Declaration(Statement):
+    left: Expression
+    right: Expression | None
+
+
+@dataclass
 class Return(Statement):
     expr: Expression
 
@@ -125,6 +131,13 @@ class If(Statement):
 @dataclass
 class While(Statement):
     condition: Expression
+    body: Body
+
+
+@dataclass
+class For(Statement):
+    iterator: Declaration
+    iterable: Expression
     body: Body
 
 
