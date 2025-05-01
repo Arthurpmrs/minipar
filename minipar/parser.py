@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from symtable import Symbol
 
 from minipar import ast
 from minipar.lexer import Lexer, NextToken
-from minipar.symbol import SymTable
+from minipar.symbol import Symbol, SymTable
 from minipar.token import Token
 
 DEFAULT_FUNCTION_NAMES = {
@@ -52,12 +51,14 @@ class ParserImpl(Parser):
     def __init__(self, lexer: Lexer):
         self.token_generator: NextToken = lexer.scan()
         self.lookahead, self.line = next(self.token_generator)
+        print(self.lookahead, self.line)
         self.symtable = SymTable()
         for func_name in DEFAULT_FUNCTION_NAMES.keys():
             self.symtable.insert(func_name, Symbol(func_name, 'FUNC'))
 
     def match(self, label: str) -> bool:
         if label == self.lookahead.label:
+            print(self.lookahead, self.line)
             # Se label corresponde, tenta pegar o próximo token
             # ou retorna Token de EOF
             try:
@@ -87,7 +88,7 @@ class ParserImpl(Parser):
 
         return body
 
-    def stmt(self) -> ast.Statment:
+    def stmt(self) -> ast.Statement:
         return self.expression()
 
     def declaration(self) -> ast.Assign:
@@ -123,6 +124,7 @@ class ParserImpl(Parser):
 
     def expression(self) -> ast.Expression:
         expr = self.logic_or()
+        return expr
 
         # match self.lookahead.label:
         #     case 'EQ':
@@ -183,7 +185,7 @@ class ParserImpl(Parser):
             operator = self.lookahead
             self.match(self.lookahead.label)
             right = self.term()
-            expr = ast.Arithmetic(expr.left.type, operator, expr, right)
+            expr = ast.Arithmetic(expr.type, operator, expr, right)
 
         return expr
 
@@ -194,7 +196,7 @@ class ParserImpl(Parser):
             operator = self.lookahead
             self.match(self.lookahead.label)
             right = self.unary()
-            expr = ast.Arithmetic(expr.left.type, operator, expr, right)
+            expr = ast.Arithmetic(expr.type, operator, expr, right)
         return expr
 
     def unary(self) -> ast.Expression:
@@ -208,6 +210,8 @@ class ParserImpl(Parser):
 
     def primary(self) -> ast.Expression:
         match self.lookahead.label:
+            case 'ID':
+                expr = self.call()
             case 'FALSE':
                 expr = ast.Constant('BOOL', self.lookahead)
                 self.match('FALSE')
@@ -220,6 +224,91 @@ class ParserImpl(Parser):
             case 'NUMBER':
                 expr = ast.Constant('NUMBER', self.lookahead)
                 self.match('NUMBER')
-            case '(':
-                pass
+            case 'LEFT_PARENTHESIS':
+                self.match('LEFT_PARENTHESIS')
+                expr = self.logic_or()
+                if not self.match('RIGHT_PARENTHESIS'):
+                    raise Exception(
+                        self.line,
+                        f'esperando ) no lugar de {self.lookahead.value}',
+                    )
+            case 'LEFT_BRACKET':
+                self.match('LEFT_BRACKET')
+                expr = self.list_literal()
+                if not self.match('RIGHT_BRACKET'):
+                    raise Exception(
+                        self.line,
+                        f'esperando ] no lugar de {self.lookahead.value}',
+                    )
+            case 'LEFT_CURLY':
+                self.match('LEFT_CURLY')
+                expr = self.list_literal()
+                if not self.match('RIGHT_CURLY'):
+                    raise Exception(
+                        self.line,
+                        f'esperando ] no lugar de {self.lookahead.value}',
+                    )
+            case _:
+                raise Exception(self.line, 'Erro de sintaxe.')
+
         return expr
+
+    def call(self) -> ast.Expression:
+        token = self.lookahead
+        self.match('ID')
+
+        # s: Symbol | None = self.symtable.find(token.value)
+        # if not s:
+        #     raise Exception(self.line, f'variável {token.value} não declarada')
+        # expr = ast.ID(type=s.type.upper(), token=token)
+        expr = ast.ID(type='', token=token)
+
+        operations = ''
+        while True:
+            match self.lookahead.label:
+                case 'LEFT_BRACKET':
+                    expr = self.index(expr)
+                case 'DOT':
+                    self.match('DOT')
+                    operations += self.lookahead.value
+                    self.match(self.lookahead.label)
+                case 'LEFT_PARENTHESIS':
+                    self.match('LEFT_PARENTHESIS')
+                    args: ast.Arguments = self.args()
+                    expr = ast.Call(
+                        type='FUNC',
+                        token=expr.token,
+                        id=expr,
+                        oper=operations,
+                        args=args,
+                    )
+                    if not self.match('RIGHT_PARENTHESIS'):
+                        raise Exception(
+                            self.line,
+                            f'esperando ( no lugar de {self.lookahead.value}',
+                        )
+                    break
+                case _:
+                    break
+
+        return expr
+
+    def index(self, ID: ast.ID) -> ast.Expression:
+        self.match('LEFT_BRACKET')
+        expr = ast.Access('', ID.token, ID, self.sum())
+        if not self.match('RIGHT_BRACKET'):
+            raise Exception(
+                self.line,
+                f'esperando ] no lugar de {self.lookahead.value}',
+            )
+        return expr
+
+    def args(self) -> ast.Arguments:
+        args: ast.Arguments = []
+
+        while self.lookahead.label != 'RIGHT_PARENTHESIS':
+            args.append(self.expression())
+            if not self.match('COMMA'):
+                break
+
+        return args
