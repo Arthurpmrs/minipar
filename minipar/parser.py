@@ -230,8 +230,8 @@ class ParserImpl(Parser):  # noqa: PLR0904
                 f'esperando TYPE no lugar de {self.lookahead.value}',
             )
         default = None
-        if self.lookahead.label == '=':
-            self.match('=')
+        if self.lookahead.label == 'EQUAL':
+            self.match('EQUAL')
             default = self.expression()
 
         return name, _type, default
@@ -490,3 +490,58 @@ class ParserImpl(Parser):  # noqa: PLR0904
                 break
 
         return args
+
+    def list_literal(self):
+        match self.lookahead.label:
+            case 'FOR':
+                return self.comprehention()
+            case _:
+                values = []
+                while self.lookahead.label != 'RIGHT_BRACKET':
+                    values.append(self.expression())
+                    if not self.match('COMMA'):
+                        break
+
+                return ast.ArrayLiteral(
+                    'LIST', Token(value='[]', label='LIST'), values=values
+                )
+
+    def comprehention(self):
+        self.match('FOR')
+        if not self.match('LEFT_PARENTHESIS'):
+            raise Exception(
+                self.line,
+                f'esperando ( no lugar de {self.lookahead.value}',
+            )
+
+        iterator = self.declaration()
+
+        if not self.match('IN'):
+            raise Exception(
+                self.line,
+                f'esperando "in" no lugar de {self.lookahead.value}',
+            )
+
+        iterable = self.expression()
+
+        if not self.match('RIGHT_PARENTHESIS'):
+            raise Exception(
+                self.line,
+                f'esperando ) no lugar de {self.lookahead.value}',
+            )
+
+        if not self.match('RARROW'):
+            raise Exception(
+                self.line,
+                f'esperando -> no lugar de {self.lookahead.value}',
+            )
+
+        expr = self.expression()
+
+        return ast.Comprehention(
+            type='COMPREHENTION',
+            token=Token(label='COMPREHENTION', value='[for]'),
+            iterable=iterable,
+            iterator=iterator,
+            expr=expr,
+        )

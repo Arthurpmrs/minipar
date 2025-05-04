@@ -104,6 +104,13 @@ class Declaration(Statement):
 
 
 @dataclass
+class Comprehention(Expression):
+    iterator: Declaration
+    iterable: Expression
+    expr: Expression
+
+
+@dataclass
 class Return(Statement):
     expr: Expression
 
@@ -188,3 +195,8 @@ class SChannel(Channel):
 @dataclass
 class CChannel(Channel):
     pass
+
+
+@dataclass
+class ArrayLiteral(Expression):
+    values: list[Expression]
