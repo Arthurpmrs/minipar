@@ -48,7 +48,7 @@ class Parser(ABC):
         pass
 
 
-class ParserImpl(Parser):
+class ParserImpl(Parser):  # noqa: PLR0904
     def __init__(self, lexer: Lexer):
         self.token_generator: NextToken = lexer.scan()
         self.lookahead, self.line = next(self.token_generator)
@@ -158,10 +158,83 @@ class ParserImpl(Parser):
                     )
                 block = self.block()
                 return ast.For(iterator, iterable, block)
+            case 'FUNC':
+                self.match('FUNC')
+                name = self.lookahead.value
+                self.match('ID')
+                if not self.match('LEFT_PARENTHESIS'):
+                    raise Exception(
+                        self.line,
+                        f'esperando ( no lugar de {self.lookahead.value}',
+                    )
+                params: ast.Parameters = self.params()
+                if not self.match('RIGHT_PARENTHESIS'):
+                    raise Exception(
+                        self.line,
+                        f'esperando ) no lugar de {self.lookahead.value}',
+                    )
+
+                if not self.match('RARROW'):
+                    raise Exception(
+                        self.line,
+                        f'esperando -> no lugar de {self.lookahead.value}',
+                    )
+                _type = self.lookahead.value
+                if not self.match('TYPE'):
+                    raise Exception(
+                        self.line,
+                        f'esperando TYPE no lugar de {self.lookahead.value}',
+                    )
+                body: ast.Body = self.block(params)
+                self.symtable.insert(name, Symbol(name, 'FUNC'))
+                return ast.FuncDef(name, _type.upper(), params, body)
+            case 'RETURN':
+                self.match('RETURN')
+                expr: ast.Expression = self.logic_or()
+                return ast.Return(expr)
+            case 'BREAK':
+                self.match('BREAK')
+                return ast.Break()
+            case 'CONTINUE':
+                self.match('CONTINUE')
+                return ast.Continue()
             case _:
                 node = self.expression()
 
         return node
+
+    def params(self) -> ast.Parameters:
+        params: ast.Parameters = {}
+
+        while self.lookahead.label != 'RIGHT_PARENTHESIS':
+            name, _type, default = self.param()
+            params.update({name: (_type.upper(), default)})
+            if not self.match('COMMA'):
+                break
+
+        return params
+
+    def param(self):
+        name = self.lookahead.value
+        self.match('ID')
+        print(name, self.lookahead)
+        if not self.match('COLON'):
+            raise Exception(
+                self.line,
+                f'esperando : no lugar de {self.lookahead.value}',
+            )
+        _type = self.lookahead.value
+        if not self.match('TYPE'):
+            raise Exception(
+                self.line,
+                f'esperando TYPE no lugar de {self.lookahead.value}',
+            )
+        default = None
+        if self.lookahead.label == '=':
+            self.match('=')
+            default = self.expression()
+
+        return name, _type, default
 
     def block(self, params: ast.Parameters | None = None) -> ast.Body:
         if not self.match('LEFT_BRACE'):
@@ -173,7 +246,6 @@ class ParserImpl(Parser):
         outer = self.symtable
         self.symtable = SymTable(prev=outer)
 
-        # Define function parameters in the local scope
         if params:
             for name, (_type, _) in params.items():
                 self.symtable.insert(name, Symbol(name, _type))
@@ -218,13 +290,6 @@ class ParserImpl(Parser):
         else:
             node = ast.Declaration(left=left, right=None)
 
-        # if not self.match('EQUAL'):
-        #     raise Exception(
-        #         self.line,
-        #         f'Esperado = no lugar de {self.lookahead.value}',
-        #     )
-        # right: ast.Expression = self.logic_or()
-        # return ast.Assign(left=left, right=right)
         return node
 
     def expression(self) -> ast.Expression:
