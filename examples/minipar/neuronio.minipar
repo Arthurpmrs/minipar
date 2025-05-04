@@ -1,0 +1,49 @@
+# Código Simples de um Neuronio
+
+var input_val: number = 1
+var output_desire: number = 0
+
+var input_weight: number = 0.5
+var learning_rate: number = 0.01
+
+
+# Função de Ativação
+func activation(sum: number) -> number{
+    if (sum >= 0) {
+        return 1
+    }
+    else {
+        return 0
+    }
+}
+
+print("Entrada: ", input_val, " Desejado: ", output_desire)
+
+# Inicializar erro
+var error: number = 1000.0
+var iteration: number = 0
+var bias: number = 1
+var bias_weight: number = 0.5
+
+while (error != 0) {
+    iteration += 1
+    print("#### Iteração: ", iteration)
+    print("Peso: ", input_weight)
+
+    var sum_val: number = (input_val * input_weight) + (bias * bias_weight)
+
+    var output: number = activation(sum_val)
+    print("Saída: ", output)
+
+    error = output_desire - output
+    print("Erro: ", error)
+
+    if (error != 0) {
+        input_weight = input_weight + (learning_rate * input_val * error)
+        print("Peso do bias: ", bias_weight)
+        bias_weight = bias_weight + (learning_rate * bias * error)
+    }
+
+    print("Parabéns!!! A Rede de um Neurônio Aprendeu")
+    print("Valor desejadao: ", output_desire)
+}
