@@ -95,7 +95,7 @@ class ParserImpl(Parser):  # noqa: PLR0904
     def stmt(self) -> ast.Statement:
         match self.lookahead.label:
             case 'VAR':
-                node = self.declaration()
+                return self.declaration()
             case 'IF':
                 self.match('IF')
                 if not self.match('LEFT_PARENTHESIS'):
@@ -114,7 +114,7 @@ class ParserImpl(Parser):  # noqa: PLR0904
                 block: ast.Body = self.block()
 
                 _else = None
-                if self.lookahead == 'ELSE':
+                if self.lookahead.label == 'ELSE':
                     self.match('ELSE')
                     _else = self.block()
 
@@ -162,34 +162,7 @@ class ParserImpl(Parser):  # noqa: PLR0904
                 block = self.block()
                 return ast.For(iterator, iterable, block)
             case 'FUNC':
-                self.match('FUNC')
-                name = self.variable('FUNC')
-                if not self.match('LEFT_PARENTHESIS'):
-                    raise Exception(
-                        self.line,
-                        f'esperando ( no lugar de {self.lookahead.value}',
-                    )
-                params: ast.Parameters = self.params()
-                if not self.match('RIGHT_PARENTHESIS'):
-                    raise Exception(
-                        self.line,
-                        f'esperando ) no lugar de {self.lookahead.value}',
-                    )
-
-                if not self.match('RARROW'):
-                    raise Exception(
-                        self.line,
-                        f'esperando -> no lugar de {self.lookahead.value}',
-                    )
-                _type = self.lookahead.value
-                if not self.match('TYPE'):
-                    raise Exception(
-                        self.line,
-                        f'esperando TYPE no lugar de {self.lookahead.value}',
-                    )
-                body: ast.Body = self.block(params)
-                self.symtable.insert(name, Symbol(name, 'FUNC'))
-                return ast.FuncDef(name, _type.upper(), params, body)
+                return self.func_def()
             case 'RETURN':
                 self.match('RETURN')
                 expr: ast.Expression = self.logic_or()
@@ -207,30 +180,104 @@ class ParserImpl(Parser):  # noqa: PLR0904
                 self.match('PAR')
                 return ast.Par(body=self.block())
             case 'C_CHANNEL':
-                self.match('C_CHANNEL')
-                name = self.variable('C_CHANNEL')
-                if not self.match('LEFT_BRACE'):
-                    raise Exception(
-                        self.line,
-                        f'esperando {{ no lugar de {self.lookahead.value}',
-                    )
-                localhost: ast.Expression = self.sum()
-                if not self.match('COMMA'):
-                    raise Exception(
-                        self.line,
-                        f'esperando , no lugar de {self.lookahead.value}',
-                    )
-                port: ast.Expression = self.sum()
-                if not self.match('RIGHT_BRACE'):
-                    raise Exception(
-                        self.line,
-                        f'esperando }} no lugar de {self.lookahead.value}',
-                    )
-                return ast.CChannel(name=name, _host=localhost, _port=port)
+                return self.c_channel()
+            case 'S_CHANNEL':
+                return self.s_channel()
             case _:
-                node = self.expression()
+                return self.expression()
 
-        return node
+    def func_def(self) -> ast.FuncDef:
+        self.match('FUNC')
+        name = self.match_id('FUNC').value
+        if not self.match('LEFT_PARENTHESIS'):
+            raise Exception(
+                self.line,
+                f'esperando ( no lugar de {self.lookahead.value}',
+            )
+        params: ast.Parameters = self.params()
+        if not self.match('RIGHT_PARENTHESIS'):
+            raise Exception(
+                self.line,
+                f'esperando ) no lugar de {self.lookahead.value}',
+            )
+
+        if not self.match('RARROW'):
+            raise Exception(
+                self.line,
+                f'esperando -> no lugar de {self.lookahead.value}',
+            )
+        _type = self.lookahead.value
+        if not self.match('TYPE'):
+            raise Exception(
+                self.line,
+                f'esperando TYPE no lugar de {self.lookahead.value}',
+            )
+        body: ast.Body = self.block(params)
+        self.symtable.insert(name, Symbol(name, 'FUNC'))
+        return ast.FuncDef(name, _type.upper(), params, body)
+
+    def c_channel(self) -> ast.CChannel:
+        self.match('C_CHANNEL')
+        channel_token = self.match_id('C_CHANNEL')
+        if not self.match('LEFT_BRACE'):
+            raise Exception(
+                self.line,
+                f'esperando {{ no lugar de {self.lookahead.value}',
+            )
+        host = self.sum()
+        if not self.match('COMMA'):
+            raise Exception(
+                self.line,
+                f'esperando , no lugar de {self.lookahead.value}',
+            )
+        port = self.sum()
+        if not self.match('RIGHT_BRACE'):
+            raise Exception(
+                self.line,
+                f'esperando }} no lugar de {self.lookahead.value}',
+            )
+        return ast.CChannel(name=channel_token.value, _host=host, _port=port)
+
+    def s_channel(self) -> ast.SChannel:
+        self.match('S_CHANNEL')
+        channel_token = self.match_id('S_CHANNEL')
+
+        if not self.match('LEFT_BRACE'):
+            raise Exception(
+                self.line,
+                f'esperando {{ no lugar de {self.lookahead.value}',
+            )
+        func_id = self.reference_id()
+        if not self.match('COMMA'):
+            raise Exception(
+                self.line,
+                f'esperando , no lugar de {self.lookahead.value}',
+            )
+        description = self.sum()
+        if not self.match('COMMA'):
+            raise Exception(
+                self.line,
+                f'esperando , no lugar de {self.lookahead.value}',
+            )
+        host = self.sum()
+        if not self.match('COMMA'):
+            raise Exception(
+                self.line,
+                f'esperando , no lugar de {self.lookahead.value}',
+            )
+        port = self.sum()
+        if not self.match('RIGHT_BRACE'):
+            raise Exception(
+                self.line,
+                f'esperando }} no lugar de {self.lookahead.value}',
+            )
+        return ast.SChannel(
+            name=channel_token.value,
+            _host=host,
+            _port=port,
+            func_name=func_id.name,
+            description=description,
+        )
 
     def params(self) -> ast.Parameters:
         params: ast.Parameters = {}
@@ -243,7 +290,7 @@ class ParserImpl(Parser):  # noqa: PLR0904
 
         return params
 
-    def param(self):
+    def param(self) -> tuple:
         name = self.lookahead.value
         self.match('ID')
         print(name, self.lookahead)
@@ -321,21 +368,31 @@ class ParserImpl(Parser):  # noqa: PLR0904
 
         return node
 
-    def variable(self, _type: str):
-        name = self.lookahead.value
+    def match_id(self, id_type: str) -> Token:
+        token = self.lookahead
         if not self.match('ID'):
             raise Exception(
                 self.line,
-                f'variável esperada ao invés de {self.lookahead.value}',
+                f'nome esperado ao invés de {self.lookahead.value}.',
             )
 
-        if not self.symtable.insert(name, Symbol(name, _type.upper())):
+        name = token.value
+        if not self.symtable.insert(name, Symbol(name, id_type.upper())):
             raise Exception(
                 self.line,
-                f'variável {name} já foi declarada neste escopo',
+                f'nome {name} já foi declarada neste escopo.',
             )
 
-        return name
+        return token
+
+    def reference_id(self) -> ast.ID:
+        token = self.lookahead
+        self.match('ID')
+
+        s: Symbol | None = self.symtable.find(token.value)
+        if not s:
+            raise Exception(self.line, f'nome {token.value} não declarado.')
+        return ast.ID(type=s.type.upper(), token=token)
 
     def expression(self) -> ast.Expression:
         expr = self.logic_or()
@@ -478,13 +535,7 @@ class ParserImpl(Parser):  # noqa: PLR0904
         return expr
 
     def call(self) -> ast.Expression:
-        token = self.lookahead
-        self.match('ID')
-
-        s: Symbol | None = self.symtable.find(token.value)
-        if not s:
-            raise Exception(self.line, f'variável {token.value} não declarada')
-        expr = ast.ID(type=s.type.upper(), token=token)
+        expr = self.reference_id()
 
         operations = ''
         while True:
@@ -563,7 +614,7 @@ class ParserImpl(Parser):  # noqa: PLR0904
 
         return args
 
-    def list_literal(self):
+    def list_literal(self) -> ast.ArrayLiteral | ast.Comprehention:
         match self.lookahead.label:
             case 'FOR':
                 return self.comprehention()
@@ -578,7 +629,7 @@ class ParserImpl(Parser):  # noqa: PLR0904
                     'LIST', Token(value='[]', label='LIST'), values=values
                 )
 
-    def comprehention(self):
+    def comprehention(self) -> ast.Comprehention:
         self.match('FOR')
         if not self.match('LEFT_PARENTHESIS'):
             raise Exception(
