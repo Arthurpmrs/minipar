@@ -473,13 +473,40 @@ class ParserImpl(Parser):  # noqa: PLR0904
 
     def index(self, ID: ast.ID) -> ast.Expression:
         self.match('LEFT_BRACKET')
-        expr = ast.Access(ID.type, ID.token, ID, self.sum())
+        expr = self.index_expression(ID)
         if not self.match('RIGHT_BRACKET'):
             raise Exception(
                 self.line,
                 f'esperando ] no lugar de {self.lookahead.value}',
             )
+
+        if isinstance(expr, ast.Access):
+            return ast.Access(ID.type, ID.token, ID, expr)
+
         return expr
+
+    def index_expression(self, ID: ast.ID) -> ast.Expression:
+        initial = None
+        final = None
+
+        if self.lookahead.label == 'COLON':
+            self.match('COLON')
+            if self.lookahead.label != 'RIGHT_BRACKET':
+                final = self.sum()
+            return ast.Slice(
+                type=ID.type, token=ID.token, initial=initial, final=final
+            )
+
+        initial = self.sum()
+
+        if self.match('COLON'):
+            if self.lookahead.label != 'RIGHT_BRACKET':
+                final = self.sum()
+            return ast.Slice(
+                type=ID.type, token=ID.token, initial=initial, final=final
+            )
+
+        return initial
 
     def args(self) -> ast.Arguments:
         args: ast.Arguments = []

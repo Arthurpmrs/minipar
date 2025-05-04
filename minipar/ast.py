@@ -87,6 +87,12 @@ class Call(Expression):
 
 
 @dataclass
+class Slice(Expression):
+    initial: Expression | None = None
+    final: Expression | None = None
+
+
+@dataclass
 class Program(Statement):
     stmts: Body | None
 
