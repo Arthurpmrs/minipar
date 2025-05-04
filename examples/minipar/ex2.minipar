@@ -1,0 +1,20 @@
+var a: bool = true
+var b: bool = 1 >= 2
+var c: number = -1
+
+while(true){
+  break
+}
+
+
+func soma(num1: number = 0, num2: number) -> number
+{
+  return num1 + num2
+}
+
+print(soma(1,2))
+var desc: string = "Digite dois numeros"
+s_channel calculadora_server {soma, desc, "localhost", 1234}
+calculadora_server.listen()
+
+

@@ -1,0 +1,35 @@
+func calc(message: string) -> string{
+  var index: number = 0
+  var size: number = len(message)
+  var result: number = 0
+  var operator: string = "+"
+  print(message)
+  while(index < size)
+  {
+    if(isalpha(message[index])){return "INVALIDO"}
+    if(message[index] == " "){
+      index = index + 1
+      continue
+    }
+    if(isnum(message[index])){
+      var valor: string = message[index]
+      index = index + 1
+      while(index < size && isnum(message[index])){
+        valor = valor + message[index]
+        index = index + 1
+      }
+      var valor_num: number = to_number(valor)
+      if(operator == "+"){result = result + valor_num}
+      else{if(operator == "-"){result = result - valor_num}
+      else{if(operator == "*"){result = result * valor_num}
+      else{if(operator == "/"){result = result / valor_num}
+      else{return "INVALIDO"}}}}
+    }else{
+      operator = message[index]
+      index = index + 1
+    }
+  }
+  return to_string(result)
+}
+
+print(calc("12 * 12"))
