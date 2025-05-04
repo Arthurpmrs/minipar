@@ -163,8 +163,7 @@ class ParserImpl(Parser):  # noqa: PLR0904
                 return ast.For(iterator, iterable, block)
             case 'FUNC':
                 self.match('FUNC')
-                name = self.lookahead.value
-                self.match('ID')
+                name = self.variable('FUNC')
                 if not self.match('LEFT_PARENTHESIS'):
                     raise Exception(
                         self.line,
@@ -201,6 +200,33 @@ class ParserImpl(Parser):  # noqa: PLR0904
             case 'CONTINUE':
                 self.match('CONTINUE')
                 return ast.Continue()
+            case 'SEQ':
+                self.match('SEQ')
+                return ast.Seq(body=self.block())
+            case 'PAR':
+                self.match('PAR')
+                return ast.Par(body=self.block())
+            case 'C_CHANNEL':
+                self.match('C_CHANNEL')
+                name = self.variable('C_CHANNEL')
+                if not self.match('LEFT_BRACE'):
+                    raise Exception(
+                        self.line,
+                        f'esperando {{ no lugar de {self.lookahead.value}',
+                    )
+                localhost: ast.Expression = self.sum()
+                if not self.match('COMMA'):
+                    raise Exception(
+                        self.line,
+                        f'esperando , no lugar de {self.lookahead.value}',
+                    )
+                port: ast.Expression = self.sum()
+                if not self.match('RIGHT_BRACE'):
+                    raise Exception(
+                        self.line,
+                        f'esperando }} no lugar de {self.lookahead.value}',
+                    )
+                return ast.CChannel(name=name, _host=localhost, _port=port)
             case _:
                 node = self.expression()
 
@@ -265,7 +291,6 @@ class ParserImpl(Parser):  # noqa: PLR0904
         return body
 
     def declaration(self) -> ast.Assign:
-        # declaration -> var ID : TYPE = expression
         self.match('VAR')
         token = deepcopy(self.lookahead)
         name = token.value
@@ -295,6 +320,22 @@ class ParserImpl(Parser):  # noqa: PLR0904
             node = ast.Declaration(left=left, right=None)
 
         return node
+
+    def variable(self, _type: str):
+        name = self.lookahead.value
+        if not self.match('ID'):
+            raise Exception(
+                self.line,
+                f'variável esperada ao invés de {self.lookahead.value}',
+            )
+
+        if not self.symtable.insert(name, Symbol(name, _type.upper())):
+            raise Exception(
+                self.line,
+                f'variável {name} já foi declarada neste escopo',
+            )
+
+        return name
 
     def expression(self) -> ast.Expression:
         expr = self.logic_or()

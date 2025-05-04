@@ -172,16 +172,16 @@ class Seq(Statement):
 @dataclass
 class Channel(Statement):
     name: str
-    _localhost: Expression
+    _host: Expression
     _port: Expression
 
     @property
-    def localhost(self):
-        return self._localhost.token.value
+    def host(self):
+        return self._host.token.value
 
     @property
-    def localhost_node(self):
-        return self._localhost
+    def host_node(self):
+        return self._host
 
     @property
     def port(self):
