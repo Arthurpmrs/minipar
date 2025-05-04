@@ -206,3 +206,8 @@ class CChannel(Channel):
 @dataclass
 class ArrayLiteral(Expression):
     values: list[Expression]
+
+
+@dataclass
+class DictLiteral(Expression):
+    entries: dict[str, Expression]

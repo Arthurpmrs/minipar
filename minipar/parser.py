@@ -18,6 +18,9 @@ DEFAULT_FUNCTION_NAMES = {
     'len': 'NUMBER',
     'isalpha': 'BOOL',
     'isnum': 'BOOL',
+    'sum': 'NUMBER',
+    'pow': 'NUMBER',
+    'sqrt': 'NUMBER',
 }
 
 STATEMENT_TOKENS = {
@@ -264,7 +267,8 @@ class ParserImpl(Parser):  # noqa: PLR0904
     def declaration(self) -> ast.Assign:
         # declaration -> var ID : TYPE = expression
         self.match('VAR')
-        name = deepcopy(self.lookahead.value)
+        token = deepcopy(self.lookahead)
+        name = token.value
         self.match('ID')
         if not self.match('COLON'):
             raise Exception(
@@ -277,12 +281,12 @@ class ParserImpl(Parser):  # noqa: PLR0904
                 self.line,
                 f'Esperado um TYPE no lugar de {self.lookahead.value}',
             )
-        if not self.symtable.insert(name, Symbol(name, _type)):
+        if not self.symtable.insert(name, Symbol(name, _type.upper())):
             raise Exception(
                 self.line,
                 f'variável {name} já foi declarada neste escopo',
             )
-        left = ast.ID(type=_type.upper(), token=name, decl=True)
+        left = ast.ID(type=_type.upper(), token=token, decl=True)
 
         if self.match('EQUAL'):
             right: ast.Expression = self.logic_or()
@@ -421,7 +425,7 @@ class ParserImpl(Parser):  # noqa: PLR0904
                     )
             case 'LEFT_BRACE':
                 self.match('LEFT_BRACE')
-                expr = self.list_literal()
+                expr = self.dict_literal()
                 if not self.match('RIGHT_BRACE'):
                     raise Exception(
                         self.line,
@@ -571,4 +575,28 @@ class ParserImpl(Parser):  # noqa: PLR0904
             iterable=iterable,
             iterator=iterator,
             expr=expr,
+        )
+
+    def dict_literal(self) -> ast.DictLiteral:
+        entries: ast.DictEntries = {}
+
+        while self.lookahead.label != 'RIGHT_BRACE':
+            key = self.lookahead.value
+            if not self.match('STRING'):
+                raise Exception(
+                    self.line,
+                    f'esperando STRING no lugar de {self.lookahead.value}',
+                )
+            if not self.match('COLON'):
+                raise Exception(
+                    self.line,
+                    f'esperando : no lugar de {self.lookahead.value}',
+                )
+            value = self.expression()
+            entries.update({key: value})
+            if not self.match('COMMA'):
+                break
+
+        return ast.DictLiteral(
+            'DICT', Token(value='{}', label='DICT'), entries=entries
         )

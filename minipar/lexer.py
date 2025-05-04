@@ -49,6 +49,7 @@ class LexerImpl(Lexer):
             'list': 'TYPE',
             'dict': 'TYPE',
             'void': 'TYPE',
+            'any': 'TYPE',
             'true': 'TRUE',
             'false': 'FALSE',
             'func': 'FUNC',
