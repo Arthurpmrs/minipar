@@ -301,7 +301,6 @@ class ParserImpl(Parser):  # noqa: PLR0904
     def param(self) -> tuple:
         name = self.lookahead.value
         self.match('ID')
-        print(name, self.lookahead)
         if not self.match('COLON'):
             raise Exception(
                 self.line,
@@ -580,14 +579,12 @@ class ParserImpl(Parser):  # noqa: PLR0904
     def index(self, ID: ast.ID) -> ast.Expression:
         self.match('LEFT_BRACKET')
         expr = self.index_expression(ID)
+
         if not self.match('RIGHT_BRACKET'):
             raise Exception(
                 self.line,
                 f'esperando ] no lugar de {self.lookahead.value}',
             )
-
-        if isinstance(expr, ast.Access):
-            return ast.Access(ID.type, ID.token, ID, expr)
 
         return expr
 
@@ -612,7 +609,7 @@ class ParserImpl(Parser):  # noqa: PLR0904
                 type=ID.type, token=ID.token, initial=initial, final=final
             )
 
-        return initial
+        return ast.Access(ID.type, ID.token, ID, initial)
 
     def args(self) -> ast.Arguments:
         args: ast.Arguments = []
