@@ -15,7 +15,7 @@ class Semantic(ABC):
         pass
 
 
-@dataclass
+@dataclass  # noqa: PLR0904
 class SemanticImpl(Semantic):
     context_stack: list[ast.Node] = field(default_factory=list)
     function_table: dict[str, ast.FuncDef] = field(default_factory=dict)
@@ -206,6 +206,25 @@ class SemanticImpl(Semantic):
                 'Erro de Tipagem: A função associada ao canal deve retornar um valor do tipo STRING.'
             )
 
+    def visit_Slice(self, node: ast.Slice):
+        inital_type = self.visit(node.initial)
+        final_type = self.visit(node.final)
+
+        if inital_type != 'NUMBER' or final_type != 'NUMBER':
+            raise Exception(
+                'Erro de Tipagem: Os índices inicial e final devem ser do tipo NUMBER.'
+            )
+        return node.type
+
+    def visit_Comprehention(self, node: ast.Comprehention):
+        iterable_type = self.visit(node.iterable)
+
+        if iterable_type != 'LIST' or iterable_type != 'DICT':
+            raise Exception(
+                'Erro de Tipagem: O identificador deve ser do tipo LIST ou DICT.'
+            )
+        return node.type
+
     def visit_Access(self, node: ast.Access):
         id_type = self.visit(node.id)
 
@@ -213,6 +232,7 @@ class SemanticImpl(Semantic):
             raise Exception(
                 'Erro de Tipagem: O identificador deve ser do tipo LIST, DICT ou STRING.'
             )
+        return node.type
 
     def visit_Call(self, node: ast.Call):
         if (
@@ -228,4 +248,31 @@ class SemanticImpl(Semantic):
                 f'Erro: A função "{node.id}" recebeu mais argumentos do que o esperado. '
                 f'Esperado {len(function.params)}, mas obteve {len(node.args)}.'
             )
+
+    def visit_ArrayLiteral(self, node: ast.ArrayLiteral):
+        element_types = {self.visit(element) for element in node.values}
+
+        if len(element_types) > 1:
+            raise Exception(
+                'Erro de Tipagem: Todos os elementos do array devem ser do mesmo tipo.'
+            )
+
+        return next(iter(element_types)) if element_types else None
+
+    def visit_Constant(self, node: ast.Constant):
+        return node.type
+
+    def visit_ID(self, node: ast.ID):
+        return node.type
+
+    def visit_Logical(self, node: ast.Logical):
+        left_type = self.visit(node.left)
+        right_type = self.visit(node.right)
+
+        if left_type != 'BOOL' or right_type != 'BOOL':
+            raise Exception(
+                'Erro de Tipagem: Operações lógicas requerem operandos do tipo BOOL.'
+            )
+
+        return 'BOOL'
 
