@@ -107,7 +107,7 @@ func main() -> void {
             continue
         }
         var recommendations: list = get_recommendations(user_ratings, target_user)
-        if (recommendations) {
+        if (recommendations.isEmpty()) {
             print("Recomendações para ", target_user, ": ", recommendations)
         }
         else {

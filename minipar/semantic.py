@@ -26,6 +26,7 @@ class SemanticImpl(Semantic):
     def visit(self, node: ast.Node):
         meth_name: str = f'visit_{type(node).__name__}'
         visitor = getattr(self, meth_name, self.generic_visit)
+        # print('\n\n', meth_name)
         return visitor(node)
 
     def generic_visit(self, node: ast.Node):
@@ -234,21 +235,6 @@ class SemanticImpl(Semantic):
             )
         return node.type
 
-    def visit_Call(self, node: ast.Call):
-        if (
-            node.id not in self.function_table
-            or node.id not in DEFAULT_FUNCTION_NAMES
-        ):
-            raise Exception(f'Erro: A função "{node.id}" não está definida.')
-
-        function = self.function_table[node.id]
-
-        if len(node.args) > len(function.params):
-            raise Exception(
-                f'Erro: A função "{node.id}" recebeu mais argumentos do que o esperado. '
-                f'Esperado {len(function.params)}, mas obteve {len(node.args)}.'
-            )
-
     def visit_ArrayLiteral(self, node: ast.ArrayLiteral):
         element_types = {self.visit(element) for element in node.values}
 
@@ -258,6 +244,37 @@ class SemanticImpl(Semantic):
             )
 
         return next(iter(element_types)) if element_types else None
+
+    def visit_Call(self, node: ast.Call):
+        func_name = node.oper if node.oper else node.token.value
+
+        if (
+            func_name not in self.function_table
+            and func_name not in DEFAULT_FUNCTION_NAMES
+        ):
+            raise Exception(f'Erro: A função "{func_name}" não está definida.')
+
+        if func_name in DEFAULT_FUNCTION_NAMES:
+            return DEFAULT_FUNCTION_NAMES[func_name]
+
+        function = self.function_table.get(str(func_name))
+
+        for arg in node.args:
+            self.visit(arg)
+
+        nondefault_params = [
+            default
+            for _, default in function.params.values()
+            if default is not None
+        ]
+
+        if len(node.args) < len(nondefault_params):
+            raise Exception(
+                f'Erro: A função "{func_name}" recebeu mais argumentos do que o esperado. '
+                f'Esperado {len(function.params)}, mas obteve {len(node.args)}.'
+            )
+
+        return function.return_type
 
     def visit_Constant(self, node: ast.Constant):
         return node.type
@@ -276,3 +293,49 @@ class SemanticImpl(Semantic):
 
         return 'BOOL'
 
+    def visit_Relational(self, node: ast.Relational):
+        left_type = self.visit(node.left)
+        right_type = self.visit(node.right)
+
+        print('\n')
+        print(node)
+        print(node.left)
+        print(node.right)
+        print('\n')
+
+        if left_type != right_type:
+            raise Exception(
+                f'Erro de Tipagem: esperado {left_type}, mas obteve {right_type}.'
+            )
+
+        return 'BOOL'
+
+    def visit_Arithmetic(self, node: ast.Arithmetic):
+        left_type = self.visit(node.left)
+        right_type = self.visit(node.right)
+
+        if node.token.value == '+':
+            if left_type != right_type:
+                raise Exception(
+                    f'Erro de Tipagem: Operação "+" requer operandos do mesmo tipo, mas obteve {left_type} e {right_type}.'
+                )
+        elif left_type != 'NUMBER' or right_type != 'NUMBER':
+            raise Exception(
+                f'Erro de Tipagem: Operação "{node.token.value}" requer operandos do tipo NUMBER, mas obteve {left_type} e {right_type}.'
+            )
+
+        return left_type
+
+    def visit_Unary(self, node: ast.Unary):
+        expr_type = self.visit(node.expr)
+
+        if node.token.tag == '-' and expr_type != 'NUMBER':
+            raise Exception(
+                f'Erro de Tipagem: Operação "{node.token.tag}" requer um operando do tipo NUMBER, mas obteve {expr_type}.'
+            )
+        elif node.token.tag == '!' and expr_type != 'BOOL':
+            raise Exception(
+                f'Erro de Tipagem: Operação "{node.token.tag}" requer um operando do tipo BOOL, mas obteve {expr_type}.'
+            )
+
+        return expr_type
