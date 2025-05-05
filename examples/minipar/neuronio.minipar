@@ -26,7 +26,7 @@ var bias: number = 1
 var bias_weight: number = 0.5
 
 while (error != 0) {
-    iteration += 1
+    iteration = iteration + 1
     print("#### Iteração: ", iteration)
     print("Peso: ", input_weight)
 

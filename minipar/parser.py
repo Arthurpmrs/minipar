@@ -21,6 +21,11 @@ DEFAULT_FUNCTION_NAMES = {
     'sum': 'NUMBER',
     'pow': 'NUMBER',
     'sqrt': 'NUMBER',
+    'exp': 'NUMBER',
+    'range': 'LIST',
+    'random': 'NUMBER',
+    'intersection': 'LIST',
+    'contains': 'BOOL',
 }
 
 STATEMENT_TOKENS = {
@@ -143,8 +148,9 @@ class ParserImpl(Parser):  # noqa: PLR0904
                         self.line,
                         f'esperando ( no lugar de {self.lookahead.value}',
                     )
-
-                iterator = self.declaration()
+                # Registrar apenas na tabela de símbolo do bloco
+                # (passar como parâmetro)
+                iterator = self.declaration(to_table=False)
 
                 if not self.match('IN'):
                     raise Exception(
@@ -159,7 +165,9 @@ class ParserImpl(Parser):  # noqa: PLR0904
                         self.line,
                         f'esperando ) no lugar de {self.lookahead.value}',
                     )
-                block = self.block()
+                block = self.block({
+                    iterator.left.name: (iterator.left.type.upper(), None)
+                })
                 return ast.For(iterator, iterable, block)
             case 'FUNC':
                 return self.func_def()
@@ -337,7 +345,7 @@ class ParserImpl(Parser):  # noqa: PLR0904
         self.symtable = outer
         return body
 
-    def declaration(self) -> ast.Assign:
+    def declaration(self, to_table: bool = True) -> ast.Assign:
         self.match('VAR')
         token = deepcopy(self.lookahead)
         name = token.value
@@ -353,7 +361,9 @@ class ParserImpl(Parser):  # noqa: PLR0904
                 self.line,
                 f'Esperado um TYPE no lugar de {self.lookahead.value}',
             )
-        if not self.symtable.insert(name, Symbol(name, _type.upper())):
+        if to_table and not self.symtable.insert(
+            name, Symbol(name, _type.upper())
+        ):
             raise Exception(
                 self.line,
                 f'variável {name} já foi declarada neste escopo',
@@ -637,6 +647,9 @@ class ParserImpl(Parser):  # noqa: PLR0904
                 f'esperando ( no lugar de {self.lookahead.value}',
             )
 
+        outer = self.symtable
+        self.symtable = SymTable(prev=outer)
+
         iterator = self.declaration()
 
         if not self.match('IN'):
@@ -660,6 +673,8 @@ class ParserImpl(Parser):  # noqa: PLR0904
             )
 
         expr = self.expression()
+
+        self.symtable = outer
 
         return ast.Comprehention(
             type='COMPREHENTION',
