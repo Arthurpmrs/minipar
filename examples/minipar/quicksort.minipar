@@ -1,0 +1,51 @@
+# Função para implementar o Quicksort
+func quicksort (array: list) -> list {
+    if (len(array) <= 1) { # Caso base: vetor com 0 ou 1 elementos já está ordenado
+        return array
+    } 
+    else {
+        var pivot: any = array[0] # Escolhe o primeiro elemento como pivô
+        
+        # Elementos menores ou iguais ao pivô
+        var menores: list = []
+        for (var x: any in array[1:]) {
+            if (x <= pivot) {
+                menores.append(x)
+            }
+        }
+
+        # Elementos maiores ou iguais ao pivô
+        var maiores: list = []
+        for (var x: any in array[1:]) {
+            if (x > pivot) {
+                maiores.append(x)
+            }
+        }
+
+        return quicksort(menores) + [pivot] + quicksort(maiores)
+    }
+}
+
+# Função para exibir interface simples de texto
+func exibir_interface() -> void {
+    print("==== Ordenação com Quicksort ====")
+    print("Insira os elementos do vetor separados por espaço:")
+
+    # TODO - Ver sobre try/except e como ler array
+    try { 
+        # Leitura do vetor
+        var array: list = []
+         print("Vetor original: ", array)
+
+        # Aplicar o Quicksort
+        var vetor_ordenado: list = quicksort(array)
+        print("Vetor ordenado: ", vetor_ordenado")
+    }
+    except (ValueError) {
+        print("Por favor, insira apenas números separados por espaço.")
+        exibir_interface()  # Reinicia a interface em caso de erro
+    }
+
+}
+
+exibir_interface()

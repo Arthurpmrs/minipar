@@ -1,0 +1,90 @@
+# Este código cria uma rede neural com uma camada oculta de três neurônios
+# e uma camada de saída com um neurônio, utilizando a função de ativação sigmóide.
+# Ele treina a rede para aprender a função XOR usando feedforward e backpropagation.
+# Todos os cálculos são realizados manualmente, sem o uso de bibliotecas externas.
+
+# Função de ativação sigmóide
+func sigmoid(x: number) -> number {
+    return 1 / (1 + exp(-x))
+}
+
+# Derivada da função de ativação sigmóide
+func sigmoid_derivative(x: number) -> number {
+    return x * (1 - x)
+}
+
+# Dados de entrada (função XOR)
+var inputs: list = [[0, 0], [0, 1], [1, 0], [1, 1]]
+# Saídas desejadas (função XOR)
+var outputs: list = [0, 1, 1, 0]
+
+
+var weights_input_hidden: list = []
+for (var i: number in range(2)){
+    var linha: list = []
+    for (var j: number in range(3)){
+        linha.append(random.random())
+    }
+    weights_input_hidden.append(linha)
+}
+
+var weights_hidden_output: list = [for (var _ : any in range(3)) -> random()]
+var bias_hidden: list = [for (var _ : any in range(3)) -> random.random()]
+var bias_output: number = random.random()
+
+# Taxa de aprendizado
+var learning_rate: number = 0.2
+
+for (var epoch: number in range(20000)) {
+    for (var i: number in range(len(inputs))) {
+
+        # Fase de feedforward
+        var hidden_layer_input: list = []
+        for (var i: number in range(2)){
+            var linha: list = []
+            for (var j: number in range(3)){
+                linha.append(random.random())
+            }
+            weights_input_hidden.append(linha)
+        }
+
+        var hidden_layer_output: list = [for (var i: number in range(3)) -> sigmoid(sum(hidden_layer_input[i * 2 : (i + 1) * 2]) + bias_hidden[i])]
+        var output_layer_input: number = sum([for (var j: number in range(3)) -> hidden_layer_output[j] * weights_hidden_output[j]]) + bias_output
+        var predicted_output: number = sigmoid(output_layer_input)
+
+        # Cálculo do erro
+        var error: number = outputs[i] - predicted_output
+
+        # Fase de backpropagation
+        var d_predicted_output: number = error * sigmoid_derivative(predicted_output)
+        var d_hidden_layer: list = [for (var j: number in range(3)) -> d_predicted_output * weights_hidden_output[j] * sigmoid_derivative(hidden_layer_output[j])]
+
+        # Atualização dos pesos e bias
+        weights_hidden_output =  [for (var j: number in range(3)) -> weights_hidden_output[j] + hidden_layer_output[j] * d_predicted_output * learning_rate]
+
+        bias_output = bias_output + d_predicted_output * learning_rate
+
+        for (var j: number in range(2)){
+            for (var k: number in range(3)){
+                weights_input_hidden[j][k] = weights_input_hidden[j][k] + inputs[i][j] * d_hidden_layer[k] * learning_rate
+                bias_hidden[k] =  bias_hidden[k] + d_hidden_layer[k] * learning_rate
+            }
+        }
+    }
+}
+
+
+# Testando a rede neural treinada
+for (var i: number in range(len(inputs))) {
+    var hidden_layer_input: list = []
+    for (var j: number in range(2)) {
+        for (var k: number in range(3)){
+            hidden_layer_input.append(inputs[i][j] * weights_input_hidden[j][k])
+        }
+    }
+
+    var hidden_layer_output: list = [for (var i: number in range(3)) -> sigmoid(sum(hidden_layer_input[i * 2 : (i + 1) * 2]) + bias_hidden[i])]
+    var output_layer_input: number = sum([for (var j: number in range(3)) -> hidden_layer_output[j] * weights_hidden_output[j]]) + bias_output
+    var predicted_output: number = sigmoid(output_layer_input)
+    print("Input:", inputs[i], ", Predicted Output: ", predicted_output)
+}

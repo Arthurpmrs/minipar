@@ -1,0 +1,147 @@
+func read_data() -> dict {
+    # Função para ler os dados de avaliação dos usuários para produtos
+    # Os dados são representados como um dicionário de dicionários
+     var user_ratings: dict = {
+        "user1": {"product1": 5, "product2": 3, "product3": 4},
+        "user2": {"product1": 4, "product2": 2, "product3": 5},
+        "user3": {"product2": 5, "product3": 3},
+        "user4": {"product1": 3, "product3": 4},
+     }
+     return user_ratings
+}
+
+func calculate_similarity(user1_ratings: dict, user2_ratings: dict) -> number {
+    # Calcula a similaridade entre dois usuários usando similaridade de cosseno
+    var common_products: list = intersection(user1_ratings.keys(), user2_ratings.keys())
+
+    if (!common_products) {
+        return 0
+    }
+
+    var sum1_sq: number = sum([for (var product: string in common_products) -> pow(user1_ratings[product], 2)]) 
+    var sum2_sq: number = sum([for (var product: string in common_products) -> pow(user2_ratings[product], 2)])
+
+    var product_sum: number = sum([for (var product: string in common_products) -> user1_ratings[product] * user2_ratings[product]])
+
+    var numerator: number = product_sum
+    var denominator: number = sqrt(sum1_sq) * sqrt(sum2_sq)
+
+    if (denominator == 0) {
+        return 0
+    }
+
+    return numerator / denominator
+}
+
+func get_recommendations(user_ratings: dict, target_user: string) -> list {
+    # Obtém recomendações de produtos para o usuário-alvo
+
+    var totals: dict = {}
+    var sim_sums: dict = {}
+
+    for (var other_user: string in user_ratings) {
+        if (other_user == target_user) {
+            continue
+        }
+
+        var similarity: number = calculate_similarity(user_ratings[target_user], user_ratings[other_user])
+
+        if (similarity <= 0) {
+            continue
+        }
+        
+        # Debug: Print user similarities
+        print("Similaridade entre ", target_user, " e ", other_user, ": ", similarity)
+
+        for (var other: list in user_ratings[other_user]) {
+            var product: string = other[0]
+            var rating: number = other[1]
+
+            if (!contains(user_ratings[target_user], product)) {
+                if (!contains(totals, product)) {
+                    totals[product] = 0
+                }
+                totals[product] = totals[product] + rating * similarity
+            
+                if (!contains(sim_sums, product)){
+                    sim_sums[product] = 0
+                }
+
+                sim_sums[product] = sim_sums[product] + similarity
+            }
+        }
+    }
+
+    var rankings: list = []
+    for (var rank: list in totals){
+        var product: string = rank[0]
+        var total: number = rank[1]
+
+        if (sim_sums[product] != 0){
+            rankings.append([total / sim_sums[product], product])
+        }
+    }
+    rankings.sort(true)
+
+    var recommendations: list = [for(var rank: list in rankings) -> rank[1]]
+    return recommendations
+}
+
+func main() -> void {
+    var user_ratings: dict = read_data()
+
+    while (true) {
+        print("\nBem-vindo ao Sistema de Recomendação de E-commerce")
+
+        var users: list = [for (var user: list in user_ratings) -> user[0]]
+        print("Usuários disponíveis:", users)
+        var target_user: string = input("Digite o usuário para o qual deseja recomendações (ou 'sair' para finalizar): ")
+        target_user = target_user.strip()
+
+        if (target_user.lower() == "sair") {
+            print("Saindo do sistema de recomendação.")
+            break
+        }
+        if (!contains(user_ratings, target_user)) {
+            print("Usuário não encontrado. Tente novamente.")
+            continue
+        }
+        var recommendations: list = get_recommendations(user_ratings, target_user)
+        if (recommendations) {
+            print("Recomendações para ", target_user, ": ", recommendations)
+        }
+        else {
+            print("Nenhuma recomendação disponível para ", target_user, ".")
+        }
+    }
+}
+
+main()
+
+
+# python recommendation_system.py
+
+# Bem-vindo ao Sistema de Recomendação de E-commerce
+# Usuários disponíveis: ['user1', 'user2', 'user3', 'user4']
+# Digite o usuário para o qual deseja recomendações (ou 'sair' #para finalizar): user1
+# Similaridade entre user1 e user2: 0.9759000729485332
+# Similaridade entre user1 e user3: 0.31622776601683794
+# Similaridade entre user1 e user4: 0.9922778767136677
+# Recomendações para user1: ['product2']
+# Digite o usuário para o qual deseja recomendações (ou 'sair' #para finalizar): user2
+# Similaridade entre user2 e user1: 0.9759000729485332
+# Similaridade entre user2 e user3: 0.5976143046671968
+# Similaridade entre user2 e user4: 0.8944271909999159
+# Recomendações para user2: []
+# Digite o usuário para o qual deseja recomendações (ou 'sair' #para finalizar): user3
+# Similaridade entre user3 e user1: 0.31622776601683794
+# Similaridade entre user3 e user2: 0.9999999999999999
+# Similaridade entre user3 e user4: 0.7071067811865475
+# Recomendações para user3: ['product1']
+# Digite o usuário para o qual deseja recomendações (ou 'sair' #para finalizar): user4
+# Similaridade entre user4 e user1: 0.9922778767136677
+# Similaridade entre user4 e user2: 0.8944271909999159
+# Similaridade entre user4 e user3: 0.7071067811865475
+# Recomendações para user4: ['product2']
+# Digite o usuário para o qual deseja recomendações (ou 'sair' #para finalizar): sair
+# Saindo do sistema de recomendação.
