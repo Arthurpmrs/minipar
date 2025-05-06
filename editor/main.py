@@ -1,9 +1,14 @@
+import sys
+
+sys.path.append('./minipar')
+
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from interpreter import Minipar
 from pydantic import BaseModel
 
 
@@ -48,7 +53,8 @@ async def run_code(run: RunSchema):
     """
     Rota que manda o código para o interpretador
     """
-    return {'output': 'AAAAAAAA'}
+    minipar = Minipar()
+    return {'output': minipar.run(run.source)}
 
 
 if __name__ == '__main__':
