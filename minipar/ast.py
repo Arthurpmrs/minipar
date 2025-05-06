@@ -85,7 +85,7 @@ class Call(Expression):
     args: Arguments
     oper: str | None
 
-
+#TODO
 @dataclass
 class Slice(Expression):
     initial: Expression | None = None
@@ -158,17 +158,17 @@ class For(Statement):
     iterable: Expression
     body: Body
 
-
+#TODO
 @dataclass
 class Par(Statement):
     body: Body
 
-
+#TODO
 @dataclass
 class Seq(Statement):
     body: Body
 
-
+#TODO
 @dataclass
 class Channel(Statement):
     name: str
@@ -191,23 +191,24 @@ class Channel(Statement):
     def port_node(self):
         return self._port
 
-
+#TODO
 @dataclass
 class SChannel(Channel):
     func_name: str
     description: Expression
 
 
+#TODO
 @dataclass
 class CChannel(Channel):
     pass
 
 
 @dataclass
-class ArrayLiteral(Expression):
+class ArrayLiteral(Expression): # tome
     values: list[Expression]
 
 
 @dataclass
-class DictLiteral(Expression):
+class DictLiteral(Expression):# tome
     entries: dict[str, Expression]

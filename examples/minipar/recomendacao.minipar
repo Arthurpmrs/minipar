@@ -89,11 +89,10 @@ func get_recommendations(user_ratings: dict, target_user: string) -> list {
 
 func main() -> void {
     var user_ratings: dict = read_data()
-
     while (true) {
-        print("\nBem-vindo ao Sistema de Recomendação de E-commerce")
+        print("Bem-vindo ao Sistema de Recomendação de E-commerce")
 
-        var users: list = [for (var user: list in user_ratings) -> user[0]]
+        var users: list = [for (var user: list in user_ratings) -> user]
         print("Usuários disponíveis:", users)
         var target_user: string = input("Digite o usuário para o qual deseja recomendações (ou 'sair' para finalizar): ")
         target_user = target_user.strip()

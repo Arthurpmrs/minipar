@@ -60,14 +60,14 @@ class ParserImpl(Parser):  # noqa: PLR0904
     def __init__(self, lexer: Lexer):
         self.token_generator: NextToken = lexer.scan()
         self.lookahead, self.line = next(self.token_generator)
-        print(self.lookahead, self.line)
+        # self.lookahead, self.line)
         self.symtable = SymTable()
         for func_name in DEFAULT_FUNCTION_NAMES.keys():
             self.symtable.insert(func_name, Symbol(func_name, 'FUNC'))
 
     def match(self, label: str) -> bool:
         if label == self.lookahead.label:
-            print(self.lookahead, self.line)
+            # self.lookahead, self.line)
             # Se label corresponde, tenta pegar o próximo token
             # ou retorna Token de EOF
             try:

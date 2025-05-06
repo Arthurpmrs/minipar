@@ -45,8 +45,6 @@ class VarTable:
     def find(self, string: str) -> Union['VarTable', None]:
         st = self
         while st:
-            value = st.table.get(string)
-            if value is None:
-                st = st.prev
-                continue
-            return st
+            if string in st.table:
+                return st
+            st = st.prev
