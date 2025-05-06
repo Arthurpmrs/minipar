@@ -1,7 +1,8 @@
 const editor = CodeMirror(document.querySelector("#code"), {
   lineNumbers: true,
   tabSize: 4,
-  mode: "xml",
+  mode: "javascript",
+  theme: "juejin",
 });
 
 document.querySelector("#run-btn").addEventListener("click", async function () {
@@ -15,4 +16,9 @@ document.querySelector("#run-btn").addEventListener("click", async function () {
       source: code,
     }),
   });
+
+  const res = await response.json();
+  document.getElementById("output").innerHTML = res.output;
 });
+
+editor.setSize("100%", "100%");
