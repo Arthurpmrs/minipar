@@ -26,7 +26,6 @@ class SemanticImpl(Semantic):
     def visit(self, node: ast.Node):
         meth_name: str = f'visit_{type(node).__name__}'
         visitor = getattr(self, meth_name, self.generic_visit)
-        # print('\n\n', meth_name)
         return visitor(node)
 
     def generic_visit(self, node: ast.Node):
@@ -44,13 +43,22 @@ class SemanticImpl(Semantic):
         self.context_stack.pop()
 
     def visit_Assign(self, node: ast.Assign):
-        if not isinstance(node.left, ast.ID):
+        if not (
+            isinstance(node.left, ast.ID) or isinstance(node.left, ast.Access)
+        ):
             raise Exception(
-                'Erro: Atribuição deve ser feita para uma variável'
+                'Erro: Atribuição deve ser feita para uma variável.'
             )
 
         left_type = self.visit(node.left)
         right_type = self.visit(node.right)
+
+        if (
+            isinstance(node.left, ast.Access)
+            or left_type == 'LIST'
+            or isinstance(node.right, ast.Arithmetic)
+        ):
+            return
 
         if left_type != right_type:
             raise Exception(
@@ -67,7 +75,15 @@ class SemanticImpl(Semantic):
             left_type = self.visit(node.left)
             right_type = self.visit(node.right)
 
-            if left_type != right_type:
+            if (
+                isinstance(node.right, ast.Access)
+                or isinstance(node.left, ast.Access)
+                or isinstance(node.right, ast.ArrayLiteral)
+                or isinstance(node.right, ast.Comprehention)
+                or isinstance(node.right, ast.Arithmetic)
+            ):
+                return
+            elif left_type != right_type:
                 raise Exception(
                     f'Erro de Tipagem: esperado {left_type}, mas obteve {right_type}.'
                 )
@@ -150,9 +166,9 @@ class SemanticImpl(Semantic):
         self.context_stack.pop()
 
     def visit_For(self, node: ast.For):
-        interable_type = self.visit(node.iterable)
+        iterable_type = self.visit(node.iterable)
 
-        if interable_type != 'LIST' or interable_type != 'DICT':
+        if iterable_type not in {'LIST', 'DICT'}:
             raise Exception(
                 'Erro de Tipagem: O interável deve ser do tipo LIST ou DICT.'
             )
@@ -220,7 +236,7 @@ class SemanticImpl(Semantic):
     def visit_Comprehention(self, node: ast.Comprehention):
         iterable_type = self.visit(node.iterable)
 
-        if iterable_type != 'LIST' or iterable_type != 'DICT':
+        if iterable_type not in {'LIST', 'DICT'}:
             raise Exception(
                 'Erro de Tipagem: O identificador deve ser do tipo LIST ou DICT.'
             )
@@ -229,10 +245,22 @@ class SemanticImpl(Semantic):
     def visit_Access(self, node: ast.Access):
         id_type = self.visit(node.id)
 
-        if id_type != 'LIST' or id_type != 'DICT' or id_type != 'STRING':
+        if id_type not in {'LIST', 'DICT', 'STRING'}:
             raise Exception(
                 'Erro de Tipagem: O identificador deve ser do tipo LIST, DICT ou STRING.'
             )
+
+        expr_type = self.visit(node.expr)
+        if id_type in {'STRING', 'LIST'}:
+            if expr_type != 'NUMBER':
+                raise Exception(
+                    'Erro de Tipagem: O índice deve ser do tipo NUMBER.'
+                )
+        elif expr_type != 'STRING':
+            raise Exception(
+                'Erro de Tipagem: A chave deve ser do tipo STRING.'
+            )
+
         return node.type
 
     def visit_ArrayLiteral(self, node: ast.ArrayLiteral):
@@ -244,6 +272,9 @@ class SemanticImpl(Semantic):
             )
 
         return next(iter(element_types)) if element_types else None
+
+    def visit_DictLiteral(self, node: ast.DictLiteral):
+        return node.type
 
     def visit_Call(self, node: ast.Call):
         func_name = node.oper if node.oper else node.token.value
@@ -297,11 +328,10 @@ class SemanticImpl(Semantic):
         left_type = self.visit(node.left)
         right_type = self.visit(node.right)
 
-        print('\n')
-        print(node)
-        print(node.left)
-        print(node.right)
-        print('\n')
+        if isinstance(node.left, ast.Access) or isinstance(
+            node.right, ast.Access
+        ):
+            return 'BOOL'
 
         if left_type != right_type:
             raise Exception(
@@ -311,8 +341,22 @@ class SemanticImpl(Semantic):
         return 'BOOL'
 
     def visit_Arithmetic(self, node: ast.Arithmetic):
+        if isinstance(node.right, ast.Access) or isinstance(
+            node.left, ast.Access
+        ):
+            return
+
         left_type = self.visit(node.left)
         right_type = self.visit(node.right)
+
+        if isinstance(node.right, ast.Access) or isinstance(
+            node.right, ast.ArrayLiteral
+        ):
+            return left_type
+        elif isinstance(node.left, ast.Access) or isinstance(
+            node.left, ast.ArrayLiteral
+        ):
+            return right_type
 
         if node.token.value == '+':
             if left_type != right_type:
@@ -329,13 +373,13 @@ class SemanticImpl(Semantic):
     def visit_Unary(self, node: ast.Unary):
         expr_type = self.visit(node.expr)
 
-        if node.token.tag == '-' and expr_type != 'NUMBER':
+        if node.token.label == '-' and expr_type != 'NUMBER':
             raise Exception(
-                f'Erro de Tipagem: Operação "{node.token.tag}" requer um operando do tipo NUMBER, mas obteve {expr_type}.'
+                f'Erro de Tipagem: Operação "{node.token.label}" requer um operando do tipo NUMBER, mas obteve {expr_type}.'
             )
-        elif node.token.tag == '!' and expr_type != 'BOOL':
+        elif node.token.label == '!' and expr_type != 'BOOL':
             raise Exception(
-                f'Erro de Tipagem: Operação "{node.token.tag}" requer um operando do tipo BOOL, mas obteve {expr_type}.'
+                f'Erro de Tipagem: Operação "{node.token.label}" requer um operando do tipo BOOL, mas obteve {expr_type}.'
             )
 
         return expr_type
