@@ -26,6 +26,12 @@ DEFAULT_FUNCTION_NAMES = {
     'random': 'NUMBER',
     'intersection': 'LIST',
     'contains': 'BOOL',
+    'listen': 'VOID',
+    'isEmpty': 'BOOL',
+    'append': 'VOID',
+    'sort': 'VOID',
+    'strip': 'STRING',
+    'lower': 'STRING',
 }
 
 STATEMENT_TOKENS = {

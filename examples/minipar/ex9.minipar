@@ -10,5 +10,5 @@ func fibonacci(n: number) -> number
     return fibonacci(n - 1) + fibonacci(n - 2)  }
 
 
-valor: number = 10
+var valor: number = 10
 print("Fibonacci de ", valor, " é: ", fibonacci(10))  
