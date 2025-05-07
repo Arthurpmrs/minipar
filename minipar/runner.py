@@ -1,13 +1,22 @@
-from abc import ABC, abstractmethod
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
-from copy import deepcopy
-from multiprocessing import Pool
-import threading
+import pprint
 import random
+import threading
+from abc import ABC, abstractmethod
+from concurrent.futures import (
+    ProcessPoolExecutor,
+    ThreadPoolExecutor,
+    as_completed,
+)
+from copy import deepcopy
 from math import exp
+from multiprocessing import Pool
 
 from minipar import ast
-from minipar.interruptions import BreakInterruption, ContinueInterruption, ReturnInterruption
+from minipar.interruptions import (
+    BreakInterruption,
+    ContinueInterruption,
+    ReturnInterruption,
+)
 from minipar.symbol import VarTable
 from minipar.utils import Utils
 
@@ -59,10 +68,14 @@ class RunnerImpl(Runner):  # noqa: PLR0904
         'len': len,
         'isalpha': Utils.isalpha,
         'isnum': Utils.is_number,
-        'debug': lambda *x: print("\nDEBUG:", *x, end="\n\n"),
+        'debug': lambda *x: print('\nDEBUG:', *x, end='\n\n'),
     }
 
-    def __init__(self, var_table: VarTable = VarTable(), func_table: dict[str, ast.FuncDef] = {}):
+    def __init__(
+        self,
+        var_table: VarTable = VarTable(),
+        func_table: dict[str, ast.FuncDef] = {},
+    ):
         self.var_table = var_table
         self.func_table = func_table
 
@@ -79,6 +92,7 @@ class RunnerImpl(Runner):  # noqa: PLR0904
             return method(node)
         else:
             import pprint
+
             pprint.pprint(node)
             print(f'exec_{type(node).__name__}')
             raise Exception(f'{type(node).__name__} not implemented.')
@@ -137,6 +151,10 @@ class RunnerImpl(Runner):  # noqa: PLR0904
     def exec_Access(self, node: ast.Access):
         index = self.execute(node.expr)
 
+        if isinstance(node.id, ast.Access):
+            result_inner = self.execute(node.id)
+            return result_inner[index]
+
         var_name = node.id.token.value
         lvalue_table = self.var_table.find(var_name)
         if lvalue_table:
@@ -190,7 +208,7 @@ class RunnerImpl(Runner):  # noqa: PLR0904
         # *************************************
         # TODO: check it
         # *************************************
-        #if left is None or right is None:
+        # if left is None or right is None:
         #    return
 
         match node.token.value:
@@ -238,18 +256,18 @@ class RunnerImpl(Runner):  # noqa: PLR0904
 
         if name in self.DEFAULT_FUNCTIONS:
             args = [self.execute(arg) for arg in node.args]
-            #TODO: to passando isso aqui como o primeiro elemento, assim como funciona o self
-            if(node.oper):
+            # TODO: to passando isso aqui como o primeiro elemento, assim como funciona o self
+            if node.oper:
                 args = [self.execute(node.id), *args]
             return self.DEFAULT_FUNCTIONS[name](*args)
 
         func = self.func_table.get(str(name))
 
-        #TODO: eu desfiz para gerar um erro, qnd a funcao nao existe, depois melhora isso aqui please
+        # TODO: eu desfiz para gerar um erro, qnd a funcao nao existe, depois melhora isso aqui please
         if not func:
-            print("DEBUG(not func):",name)
+            print('DEBUG(not func):', name)
             raise Exception(node)
-        
+
         self.enter_scope()
         # Compute default values from function parameters
         for param_name, (_, default) in func.params.items():
@@ -294,7 +312,7 @@ class RunnerImpl(Runner):  # noqa: PLR0904
             finally:
                 self.exit_scope()
         return result
-    
+
     def exec_For(self, node: ast.For):
         iterable = self.execute(node.iterable)
         for value in iterable:
@@ -309,10 +327,9 @@ class RunnerImpl(Runner):  # noqa: PLR0904
             finally:
                 self.exit_scope()
 
-
     def exec_While(self, node: ast.While):
         temp = self.execute(node.condition)
-        while(temp):
+        while temp:
             try:
                 self.enter_scope()
                 self.exec_block(node.body)
@@ -324,7 +341,6 @@ class RunnerImpl(Runner):  # noqa: PLR0904
             finally:
                 self.exit_scope()
 
-    
     def exec_If(self, node: ast.If):
         if self.execute(node.condition):
             try:
@@ -338,15 +354,15 @@ class RunnerImpl(Runner):  # noqa: PLR0904
                 self.exec_block(node.else_stmt)
             finally:
                 self.exit_scope()
-    
+
     def exec_Par(self, node: ast.Par):
         with Pool() as pool:
             pool.map(self.execute, node.body)
-    
+
     def exec_Seq(self, node: ast.Seq):
         for instruction in node.body:
             self.execute(instruction)
-    
+
     def exec_Slice(self, node: ast.Slice):
         start = self.execute(node.initial)
         end = self.execute(node.final)
@@ -357,4 +373,3 @@ class RunnerImpl(Runner):  # noqa: PLR0904
                 return lvalue_table.table[var_name][start:end]
             else:
                 raise Exception(f'variável {var_name} não definida')
-        
