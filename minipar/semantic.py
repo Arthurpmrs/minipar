@@ -285,13 +285,13 @@ class SemanticImpl(Semantic):
         ):
             raise Exception(f'Erro: A função "{func_name}" não está definida.')
 
+        for arg in node.args:
+            self.visit(arg)
+
         if func_name in DEFAULT_FUNCTION_NAMES:
             return DEFAULT_FUNCTION_NAMES[func_name]
 
         function = self.function_table.get(str(func_name))
-
-        for arg in node.args:
-            self.visit(arg)
 
         nondefault_params = [
             default

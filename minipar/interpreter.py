@@ -1,5 +1,11 @@
+import io
 from abc import ABC, abstractmethod
-from pathlib import Path
+from contextlib import redirect_stdout
+
+from minipar.lexer import LexerImpl
+from minipar.parser import ParserImpl
+from minipar.runner import RunnerImpl
+from minipar.semantic import SemanticImpl
 
 
 class Interpreter(ABC):
@@ -11,11 +17,22 @@ class Interpreter(ABC):
 class Minipar(Interpreter):
     def run(self, source: str) -> str:
         if not source:
-            raise Exception('The file is empty.')
+            raise Exception('Não há código para executar.')
 
-        # lexer (generate tokens)
-        # Parser (generate ast)
-        # Semantic (validate ast)
-        # Runner (execute based on ast)
+        buffer = io.StringIO()
+        with redirect_stdout(buffer):
+            try:
+                lexer = LexerImpl(source)
 
-        return 'Faltou implementar'
+                parser = ParserImpl(lexer)
+                ast = parser.start()
+
+                semantic = SemanticImpl()
+                semantic.visit(ast)
+
+                runner = RunnerImpl()
+                runner.run(ast)
+            except Exception as e:
+                print(e)
+
+        return buffer.getvalue()

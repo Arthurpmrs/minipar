@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append('./minipar')
+sys.path.append('./')
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -8,8 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from interpreter import Minipar
 from pydantic import BaseModel
+
+from minipar.interpreter import Minipar
 
 
 class RunSchema(BaseModel):
