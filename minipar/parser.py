@@ -33,6 +33,8 @@ DEFAULT_FUNCTION_NAMES = {
     'lower': 'STRING',
     'debug': 'VOID',
     'items': 'LIST',
+    'keys': 'LIST',
+    'split': 'LIST',
 }
 
 STATEMENT_TOKENS = {

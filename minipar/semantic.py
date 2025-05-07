@@ -142,7 +142,7 @@ class SemanticImpl(Semantic):
     def visit_If(self, node: ast.If):
         conditon_type = self.visit(node.condition)
 
-        if conditon_type != 'BOOL':
+        if conditon_type not in {'BOOL', 'LIST', 'DICT'}:
             raise Exception(
                 f'Erro de Tipagem: tipo de retorno esperado BOOL, mas obteve {conditon_type}.'
             )
@@ -227,9 +227,14 @@ class SemanticImpl(Semantic):
         inital_type = self.visit(node.initial)
         final_type = self.visit(node.final)
 
-        if inital_type != 'NUMBER' or final_type != 'NUMBER':
+        if node.initial and inital_type != 'NUMBER':
             raise Exception(
-                'Erro de Tipagem: Os índices inicial e final devem ser do tipo NUMBER.'
+                'Erro de Tipagem: Os índices inicial devem ser do tipo NUMBER.'
+            )
+
+        if node.final and final_type != 'NUMBER':
+            raise Exception(
+                'Erro de Tipagem: Os índices final devem ser do tipo NUMBER.'
             )
         return node.type
 
@@ -266,10 +271,10 @@ class SemanticImpl(Semantic):
     def visit_ArrayLiteral(self, node: ast.ArrayLiteral):
         element_types = {self.visit(element) for element in node.values}
 
-        if len(element_types) > 1:
-            raise Exception(
-                'Erro de Tipagem: Todos os elementos do array devem ser do mesmo tipo.'
-            )
+        # if len(element_types) > 1:
+        #     raise Exception(
+        #         'Erro de Tipagem: Todos os elementos do array devem ser do mesmo tipo.'
+        #     )
 
         return next(iter(element_types)) if element_types else None
 
@@ -377,7 +382,11 @@ class SemanticImpl(Semantic):
             raise Exception(
                 f'Erro de Tipagem: Operação "{node.token.label}" requer um operando do tipo NUMBER, mas obteve {expr_type}.'
             )
-        elif node.token.label == '!' and expr_type != 'BOOL':
+        elif node.token.label == '!' and expr_type not in {
+            'BOOL',
+            'LIST',
+            'DICT',
+        }:
             raise Exception(
                 f'Erro de Tipagem: Operação "{node.token.label}" requer um operando do tipo BOOL, mas obteve {expr_type}.'
             )

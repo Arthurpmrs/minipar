@@ -15,6 +15,7 @@ from minipar.interpreter import Minipar
 
 class RunSchema(BaseModel):
     source: str
+    keyboard_input: str
 
 
 class RunResponse(BaseModel):
@@ -55,7 +56,7 @@ async def run_code(run: RunSchema):
     Rota que manda o código para o interpretador
     """
     minipar = Minipar()
-    return {'output': minipar.run(run.source)}
+    return {'output': minipar.run(run.source, run.keyboard_input)}
 
 
 if __name__ == '__main__':
