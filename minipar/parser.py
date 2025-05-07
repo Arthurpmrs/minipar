@@ -26,7 +26,12 @@ DEFAULT_FUNCTION_NAMES = {
     'random': 'NUMBER',
     'intersection': 'LIST',
     'contains': 'BOOL',
-    'sort': 'LIST',
+    'listen': 'VOID',
+    'isEmpty': 'BOOL',
+    'append': 'VOID',
+    'sort': 'VOID',
+    'strip': 'STRING',
+    'lower': 'STRING',
     'debug': 'VOID',
 }
 
@@ -599,7 +604,11 @@ class ParserImpl(Parser):  # noqa: PLR0904
             if self.lookahead.label != 'RIGHT_BRACKET':
                 final = self.sum()
             return ast.Slice(
-                type=ID.type, token=ID.token, initial=initial, final=final, id=ID
+                type=ID.type,
+                token=ID.token,
+                initial=initial,
+                final=final,
+                id=ID,
             )
 
         initial = self.sum()
@@ -608,7 +617,11 @@ class ParserImpl(Parser):  # noqa: PLR0904
             if self.lookahead.label != 'RIGHT_BRACKET':
                 final = self.sum()
             return ast.Slice(
-                type=ID.type, token=ID.token, initial=initial, final=final, id=ID
+                type=ID.type,
+                token=ID.token,
+                initial=initial,
+                final=final,
+                id=ID,
             )
 
         return ast.Access(ID.type, ID.token, ID, initial)
