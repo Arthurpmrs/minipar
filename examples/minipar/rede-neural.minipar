@@ -23,14 +23,14 @@ var weights_input_hidden: list = []
 for (var i: number in range(2)){
     var linha: list = []
     for (var j: number in range(3)){
-        linha.append(random.random())
+        linha.append(random())
     }
     weights_input_hidden.append(linha)
 }
 
 var weights_hidden_output: list = [for (var _ : any in range(3)) -> random()]
-var bias_hidden: list = [for (var _ : any in range(3)) -> random.random()]
-var bias_output: number = random.random()
+var bias_hidden: list = [for (var _ : any in range(3)) -> random()]
+var bias_output: number = random()
 
 # Taxa de aprendizado
 var learning_rate: number = 0.2
@@ -43,10 +43,11 @@ for (var epoch: number in range(20000)) {
         for (var i: number in range(2)){
             var linha: list = []
             for (var j: number in range(3)){
-                linha.append(random.random())
+                linha.append(random())
             }
             weights_input_hidden.append(linha)
         }
+
 
         var hidden_layer_output: list = [for (var i: number in range(3)) -> sigmoid(sum(hidden_layer_input[i * 2 : (i + 1) * 2]) + bias_hidden[i])]
         var output_layer_input: number = sum([for (var j: number in range(3)) -> hidden_layer_output[j] * weights_hidden_output[j]]) + bias_output
@@ -66,13 +67,14 @@ for (var epoch: number in range(20000)) {
 
         for (var j: number in range(2)){
             for (var k: number in range(3)){
+                debug("ok")
                 weights_input_hidden[j][k] = weights_input_hidden[j][k] + inputs[i][j] * d_hidden_layer[k] * learning_rate
+                debug("ok")
                 bias_hidden[k] =  bias_hidden[k] + d_hidden_layer[k] * learning_rate
             }
         }
     }
 }
-
 
 # Testando a rede neural treinada
 for (var i: number in range(len(inputs))) {

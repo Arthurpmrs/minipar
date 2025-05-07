@@ -34,3 +34,30 @@ class Utils:
         if(isinstance(a, dict)):
             return a.__contains__(b)
         return a.count(b) > 0
+    
+    @staticmethod
+    def sleep(seconds):
+        import time
+        time.sleep(seconds)
+    
+    @staticmethod
+    def sort(a: list, reverse: bool = False):
+        a.sort(reverse=reverse)
+        return a
+    
+    @staticmethod
+    def intersection(a: list, b: list):
+        return list(set(a) & set(b))
+    
+    @staticmethod
+    def keys(d: dict):
+        return d.keys()
+    
+    @staticmethod
+    def sqrt(x):
+        import math
+        return  math.sqrt(x)
+    
+    @staticmethod
+    def items(d: dict):
+        return d.items()

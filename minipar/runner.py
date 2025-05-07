@@ -1,4 +1,10 @@
 from abc import ABC, abstractmethod
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+from copy import deepcopy
+from multiprocessing import Pool
+import threading
+import random
+from math import exp
 
 from minipar import ast
 from minipar.interruptions import BreakInterruption, ContinueInterruption, ReturnInterruption
@@ -33,21 +39,32 @@ class RunnerImpl(Runner):  # noqa: PLR0904
         'to_number': Utils.to_number,
         'to_string': str,
         'to_bool': bool,
-        # 'sleep': sleep,
+        'sleep': Utils.sleep,
+        'sort': Utils.sort,
+        'keys': Utils.keys,
         # 'send': self.send,
         # 'close': self.close,
+        'items': Utils.items,
+        'sum': sum,
+        'pow': pow,
+        'exp': exp,
+        'range': range,
+        'sqrt': Utils.sqrt,
+        'append': lambda a, b: a.append(b),
+        'intersection': Utils.intersection,
+        'random': random.random,
         'contains': Utils.contains,
         'lower': Utils.lower,
         'strip': Utils.strip,
         'len': len,
         'isalpha': Utils.isalpha,
         'isnum': Utils.is_number,
+        'debug': lambda *x: print("\nDEBUG:", *x, end="\n\n"),
     }
 
-    def __init__(self):
-        self.var_table = VarTable()
-        self.func_table = {}
-        
+    def __init__(self, var_table: VarTable = VarTable(), func_table: dict[str, ast.FuncDef] = {}):
+        self.var_table = var_table
+        self.func_table = func_table
 
     def run(self, node: ast.Program):
         if node.stmts:
@@ -61,6 +78,8 @@ class RunnerImpl(Runner):  # noqa: PLR0904
         if method:
             return method(node)
         else:
+            import pprint
+            pprint.pprint(node)
             print(f'exec_{type(node).__name__}')
             raise Exception(f'{type(node).__name__} not implemented.')
 
@@ -79,12 +98,18 @@ class RunnerImpl(Runner):  # noqa: PLR0904
 
     def exec_Assign(self, node: ast.Assign):
         rvalue = self.execute(node.right)
-        var_name = node.left.name
-        lvalue_table = self.var_table.find(var_name)
-        if lvalue_table:
-            lvalue_table.table[var_name] = rvalue
+
+        if isinstance(node.left, ast.Access):
+            dict_obj = self.execute(node.left.id)
+            key = self.execute(node.left.expr)
+            dict_obj[key] = rvalue
         else:
-            self.var_table.table[var_name] = rvalue
+            var_name = node.left.name
+            lvalue_table = self.var_table.find(var_name)
+            if lvalue_table:
+                lvalue_table.table[var_name] = rvalue
+            else:
+                self.var_table.table[var_name] = rvalue
 
     def exec_FuncDef(self, node: ast.FuncDef):
         if node.name not in self.func_table:
@@ -272,14 +297,17 @@ class RunnerImpl(Runner):  # noqa: PLR0904
     
     def exec_For(self, node: ast.For):
         iterable = self.execute(node.iterable)
-        for value in iterable:  
+        for value in iterable:
             try:
                 self.enter_scope()
                 self.var_table.table[node.iterator.left.name] = value
-                self.execute(node.body)
+                self.exec_block(node.body)
+            except ContinueInterruption:
+                continue
+            except BreakInterruption:
+                break
             finally:
-                self.enter_scope()
-
+                self.exit_scope()
 
 
     def exec_While(self, node: ast.While):
@@ -310,3 +338,23 @@ class RunnerImpl(Runner):  # noqa: PLR0904
                 self.exec_block(node.else_stmt)
             finally:
                 self.exit_scope()
+    
+    def exec_Par(self, node: ast.Par):
+        with Pool() as pool:
+            pool.map(self.execute, node.body)
+    
+    def exec_Seq(self, node: ast.Seq):
+        for instruction in node.body:
+            self.execute(instruction)
+    
+    def exec_Slice(self, node: ast.Slice):
+        start = self.execute(node.initial)
+        end = self.execute(node.final)
+        if isinstance(node.id, ast.ID):
+            var_name = node.id.token.value
+            lvalue_table = self.var_table.find(var_name)
+            if lvalue_table:
+                return lvalue_table.table[var_name][start:end]
+            else:
+                raise Exception(f'variável {var_name} não definida')
+        

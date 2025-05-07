@@ -5,7 +5,7 @@ from minipar.parser import ParserImpl
 from minipar.runner import RunnerImpl
 
 if __name__ == '__main__':
-    path_to_source = './examples/minipar/recomendacao.minipar'
+    path_to_source = './examples/minipar/rede-neural.minipar'
 
     with open(path_to_source, 'r', encoding='utf-8') as f:
         source = f.read()

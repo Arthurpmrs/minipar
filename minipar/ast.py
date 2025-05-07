@@ -85,9 +85,10 @@ class Call(Expression):
     args: Arguments
     oper: str | None
 
-#TODO
+
 @dataclass
 class Slice(Expression):
+    id: ID
     initial: Expression | None = None
     final: Expression | None = None
 
@@ -158,12 +159,12 @@ class For(Statement):
     iterable: Expression
     body: Body
 
-#TODO
+
 @dataclass
 class Par(Statement):
     body: Body
 
-#TODO
+
 @dataclass
 class Seq(Statement):
     body: Body
@@ -205,10 +206,10 @@ class CChannel(Channel):
 
 
 @dataclass
-class ArrayLiteral(Expression): # tome
+class ArrayLiteral(Expression):
     values: list[Expression]
 
 
 @dataclass
-class DictLiteral(Expression):# tome
+class DictLiteral(Expression):
     entries: dict[str, Expression]

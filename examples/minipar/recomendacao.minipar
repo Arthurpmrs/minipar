@@ -49,11 +49,10 @@ func get_recommendations(user_ratings: dict, target_user: string) -> list {
         if (similarity <= 0) {
             continue
         }
-        
         # Debug: Print user similarities
         print("Similaridade entre ", target_user, " e ", other_user, ": ", similarity)
 
-        for (var other: list in user_ratings[other_user]) {
+        for (var other: list in user_ratings[other_user].items()) {
             var product: string = other[0]
             var rating: number = other[1]
 
@@ -73,7 +72,7 @@ func get_recommendations(user_ratings: dict, target_user: string) -> list {
     }
 
     var rankings: list = []
-    for (var rank: list in totals){
+    for (var rank: list in totals.items()){
         var product: string = rank[0]
         var total: number = rank[1]
 
@@ -81,7 +80,7 @@ func get_recommendations(user_ratings: dict, target_user: string) -> list {
             rankings.append([total / sim_sums[product], product])
         }
     }
-    rankings.sort(true)
+    sort(rankings, true)
 
     var recommendations: list = [for(var rank: list in rankings) -> rank[1]]
     return recommendations
