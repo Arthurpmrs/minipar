@@ -33,7 +33,7 @@ func exibir_interface() -> void {
 
     # Leitura do vetor
     var input_numbers: string = input()
-    var numbers: list = input_numbers.split(",")
+    var numbers: list = input_numbers.split(" ")
     var numbers_strip: list = [for (var n: string in numbers) -> n.strip()]
     
     var array: list = [for (var n: string in numbers) -> n.to_number()]
