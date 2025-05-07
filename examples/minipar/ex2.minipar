@@ -15,6 +15,4 @@ func soma(num1: number = 0, num2: number) -> string
 print(soma(1,2))
 var desc: string = "Digite dois numeros"
 s_channel calculadora_server {soma, desc, "localhost", 1234}
-calculadora_server.listen()
-
 

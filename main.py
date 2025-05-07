@@ -2,6 +2,7 @@ import pprint
 
 from minipar.lexer import LexerImpl
 from minipar.parser import ParserImpl
+from minipar.runner import RunnerImpl
 from minipar.semantic import SemanticImpl
 
 if __name__ == '__main__':
@@ -15,5 +16,9 @@ if __name__ == '__main__':
         ast = parser.start()
         semantic.visit(ast)
 
-        pprint.pprint(ast)
-        print(parser.symtable.table)
+        # pprint.past)
+        # parser.symtable.table)
+        runner = RunnerImpl()
+        runner.run(ast)
+        # pprint.prunner.var_table)
+        # pprint.prunner.func_table)

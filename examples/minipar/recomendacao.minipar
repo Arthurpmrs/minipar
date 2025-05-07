@@ -14,7 +14,7 @@ func calculate_similarity(user1_ratings: dict, user2_ratings: dict) -> number {
     # Calcula a similaridade entre dois usuários usando similaridade de cosseno
     var common_products: list = intersection(user1_ratings.keys(), user2_ratings.keys())
 
-    if (common_products.isEmpty()) {
+    if (!common_products) {
         return 0
     }
 
@@ -49,11 +49,10 @@ func get_recommendations(user_ratings: dict, target_user: string) -> list {
         if (similarity <= 0) {
             continue
         }
-        
         # Debug: Print user similarities
         print("Similaridade entre ", target_user, " e ", other_user, ": ", similarity)
 
-        for (var other: list in user_ratings[other_user]) {
+        for (var other: list in user_ratings[other_user].items()) {
             var product: string = other[0]
             var rating: number = other[1]
 
@@ -73,7 +72,7 @@ func get_recommendations(user_ratings: dict, target_user: string) -> list {
     }
 
     var rankings: list = []
-    for (var rank: list in totals){
+    for (var rank: list in totals.items()){
         var product: string = rank[0]
         var total: number = rank[1]
 
@@ -81,7 +80,7 @@ func get_recommendations(user_ratings: dict, target_user: string) -> list {
             rankings.append([total / sim_sums[product], product])
         }
     }
-    rankings.sort(true)
+    sort(rankings, true)
 
     var recommendations: list = [for(var rank: list in rankings) -> rank[1]]
     return recommendations
@@ -89,11 +88,10 @@ func get_recommendations(user_ratings: dict, target_user: string) -> list {
 
 func main() -> void {
     var user_ratings: dict = read_data()
-
     while (true) {
-        print("\nBem-vindo ao Sistema de Recomendação de E-commerce")
+        print("Bem-vindo ao Sistema de Recomendação de E-commerce")
 
-        var users: list = [for (var user: list in user_ratings) -> user[0]]
+        var users: list = [for (var user: list in user_ratings) -> user]
         print("Usuários disponíveis:", users)
         var target_user: string = input("Digite o usuário para o qual deseja recomendações (ou 'sair' para finalizar): ")
         target_user = target_user.strip()
@@ -107,7 +105,7 @@ func main() -> void {
             continue
         }
         var recommendations: list = get_recommendations(user_ratings, target_user)
-        if (!recommendations.isEmpty()) {
+        if (recommendations) {
             print("Recomendações para ", target_user, ": ", recommendations)
         }
         else {
