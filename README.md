@@ -1,7 +1,7 @@
 # Interpretador da Linguagem Minipar
 Implementação de um interpretador baseado em Python para a linguagem Minipar, como parte do processo avaliativo da disciplina de Compiladores do curso de Ciência da Computação da Universidade Federal de Alagoas. 
 
-Professor: Dr. Arthuro Hernandez Dominguez
+Professor: Dr. Arturo Hernandez Dominguez
 
 Equipe:
 - Arthur Pontes de Miranda Ramos Soares
