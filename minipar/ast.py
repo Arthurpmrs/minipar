@@ -169,7 +169,7 @@ class Par(Statement):
 class Seq(Statement):
     body: Body
 
-#TODO
+
 @dataclass
 class Channel(Statement):
     name: str
@@ -192,14 +192,14 @@ class Channel(Statement):
     def port_node(self):
         return self._port
 
-#TODO
+
 @dataclass
 class SChannel(Channel):
     func_name: str
     description: Expression
 
 
-#TODO
+
 @dataclass
 class CChannel(Channel):
     pass

@@ -1,12 +1,7 @@
-import pprint
 import random
+import socket
 import threading
 from abc import ABC, abstractmethod
-from concurrent.futures import (
-    ProcessPoolExecutor,
-    ThreadPoolExecutor,
-    as_completed,
-)
 from copy import deepcopy
 from math import exp
 from multiprocessing import Pool
@@ -42,6 +37,7 @@ class Runner(ABC):
 class RunnerImpl(Runner):  # noqa: PLR0904
     var_table: VarTable
     func_table: dict[str, ast.FuncDef]
+    connection_table: dict[str, socket.socket]
     DEFAULT_FUNCTIONS = {
         'print': print,
         'input': input,
@@ -55,7 +51,7 @@ class RunnerImpl(Runner):  # noqa: PLR0904
         # 'close': self.close,
         'items': Utils.items,
         'sum': sum,
-        'pow': pow,
+        'pow': lambda a, b: a**b,
         'exp': exp,
         'range': range,
         'sqrt': Utils.sqrt,
@@ -75,9 +71,11 @@ class RunnerImpl(Runner):  # noqa: PLR0904
         self,
         var_table: VarTable = VarTable(),
         func_table: dict[str, ast.FuncDef] = {},
+        connection_table: dict[str, socket.socket] = {}
     ):
         self.var_table = var_table
         self.func_table = func_table
+        self.connection_table = connection_table
 
     def run(self, node: ast.Program):
         if node.stmts:
@@ -180,11 +178,6 @@ class RunnerImpl(Runner):  # noqa: PLR0904
         left = self.execute(node.left)
         right = self.execute(node.right)
 
-        # *************************************
-        # TODO: check it
-        # *************************************
-        # if left is None or right is None:
-        #     return
 
         match node.token.value:
             case '==':
@@ -205,11 +198,6 @@ class RunnerImpl(Runner):  # noqa: PLR0904
     def exec_Arithmetic(self, node: ast.Arithmetic):
         left = self.execute(node.left)
         right = self.execute(node.right)
-        # *************************************
-        # TODO: check it
-        # *************************************
-        # if left is None or right is None:
-        #    return
 
         match node.token.value:
             case '+':
@@ -254,16 +242,22 @@ class RunnerImpl(Runner):  # noqa: PLR0904
     def exec_Call(self, node: ast.Call):
         name = node.oper if node.oper else node.token.value
 
+        if name in ['send', 'close']:
+            conn_name = node.token.value
+            if name == 'send':
+                args = [self.execute(arg) for arg in node.args]
+                return self.send(conn_name, *args)
+            elif name == 'close':
+                return self.close(conn_name)
+
         if name in self.DEFAULT_FUNCTIONS:
             args = [self.execute(arg) for arg in node.args]
-            # TODO: to passando isso aqui como o primeiro elemento, assim como funciona o self
             if node.oper:
                 args = [self.execute(node.id), *args]
             return self.DEFAULT_FUNCTIONS[name](*args)
 
         func = self.func_table.get(str(name))
 
-        # TODO: eu desfiz para gerar um erro, qnd a funcao nao existe, depois melhora isso aqui please
         if not func:
             print('DEBUG(not func):', name)
             raise Exception(node)
@@ -373,3 +367,72 @@ class RunnerImpl(Runner):  # noqa: PLR0904
                 return lvalue_table.table[var_name][start:end]
             else:
                 raise Exception(f'variável {var_name} não definida')
+
+    def exec_CChannel(self, node: ast.CChannel):
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((node.host, int(node.port)))
+        print(client.recv(2040).decode())
+        self.connection_table[node.name] = client
+    
+    def exec_SChannel(self, node: ast.SChannel):
+        def handle_client(conn, func):
+            try:
+                conn.send(self.execute(node.description).encode("utf-8"))
+                while True:
+                    data = conn.recv(2048).decode("utf-8")
+                    if not data:
+                        conn.close()
+                        break
+                    call = ast.Call(
+                        type=func.return_type,
+                        token=ast.Token('ID', func.name),
+                        args=[ast.Constant(type='STRING', token=ast.Token('STRING', data))],
+                        id=None,
+                        oper=None,
+                    )
+                    ret = self.execute(call)
+                    print(ret)
+                    conn.send(str(ret).encode())
+            except Exception as e:
+                print(f"Erro ao processar cliente: {e}")
+            finally:
+                print("Cliente desconectado.")
+                conn.close()
+
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind((node.host, int(node.port)))
+        server.listen(10)
+
+        func: ast.FuncDef = self.func_table.get(node.func_name)
+        if not func:
+            raise Exception(f"Função {node.func_name} não encontrada na tabela de funções.")
+
+        print(f"Servidor iniciado em {node.host}:{node.port}")
+        try:
+            while True:
+                try:
+                    conn, _ = server.accept()
+                    print("Cliente conectado.")
+                    threading.Thread(target=handle_client, args=(conn, func)).start()
+                except KeyboardInterrupt:
+                    print("Encerrando servidor...")
+                    break
+        finally:
+            server.close()
+
+
+    def send(self, conn_name: str, msg: str):
+        conn = self.connection_table.get(conn_name)
+        if conn:
+            conn.send(msg.encode())
+        else:
+            raise Exception(f'Conexão {conn_name} não encontrada')
+        return conn.recv(2048).decode("utf-8")
+        
+    def close(self, conn_name: str):
+        conn = self.connection_table.get(conn_name)
+        if conn:
+            conn.close()
+            del self.connection_table[conn_name]
+        else:
+            raise Exception(f'Conexão {conn_name} não encontrada')
