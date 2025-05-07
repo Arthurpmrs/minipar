@@ -12,8 +12,7 @@ Equipe:
 ## Como executar o projeto
 O projeto consiste em um interpretador baseado em Python para a linguagem Minipar, além de uma interface para execução de códigos. 
 
-![image](https://github.com/user-attachments/assets/950b65d6-fe9e-40b7-8288-42f8107e7a19)
-
+![image](https://github.com/user-attachments/assets/800bbdc5-4955-42bf-a6f7-4fbff7454992)
 
 Para executar o sistema, siga as instruções abaixo.
 
