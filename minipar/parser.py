@@ -27,12 +27,12 @@ DEFAULT_FUNCTION_NAMES = {
     'intersection': 'LIST',
     'contains': 'BOOL',
     'listen': 'VOID',
-    'isEmpty': 'BOOL',
     'append': 'VOID',
     'sort': 'VOID',
     'strip': 'STRING',
     'lower': 'STRING',
     'debug': 'VOID',
+    'items': 'LIST',
 }
 
 STATEMENT_TOKENS = {

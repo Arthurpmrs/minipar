@@ -14,7 +14,7 @@ func calculate_similarity(user1_ratings: dict, user2_ratings: dict) -> number {
     # Calcula a similaridade entre dois usuários usando similaridade de cosseno
     var common_products: list = intersection(user1_ratings.keys(), user2_ratings.keys())
 
-    if (common_products.isEmpty()) {
+    if (!common_products) {
         return 0
     }
 
@@ -105,7 +105,7 @@ func main() -> void {
             continue
         }
         var recommendations: list = get_recommendations(user_ratings, target_user)
-        if (!recommendations.isEmpty()) {
+        if (recommendations) {
             print("Recomendações para ", target_user, ": ", recommendations)
         }
         else {
