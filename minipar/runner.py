@@ -65,6 +65,7 @@ class RunnerImpl(Runner):  # noqa: PLR0904
         'contains': Utils.contains,
         'lower': Utils.lower,
         'strip': Utils.strip,
+        'split': lambda a, b: a.split(b),
         'len': len,
         'isalpha': Utils.isalpha,
         'isnum': Utils.is_number,
@@ -364,12 +365,23 @@ class RunnerImpl(Runner):  # noqa: PLR0904
             self.execute(instruction)
 
     def exec_Slice(self, node: ast.Slice):
-        start = self.execute(node.initial)
-        end = self.execute(node.final)
-        if isinstance(node.id, ast.ID):
-            var_name = node.id.token.value
-            lvalue_table = self.var_table.find(var_name)
-            if lvalue_table:
-                return lvalue_table.table[var_name][start:end]
-            else:
-                raise Exception(f'variável {var_name} não definida')
+        var_name = node.id.token.value
+        if not isinstance(node.id, ast.ID):
+            return Exception(
+                f'{var_name} deve ser uma variável definida'
+            ).add_note
+
+        lvalue_table = self.var_table.find(var_name)
+        if not lvalue_table:
+            raise Exception(f'variável {var_name} não definida')
+
+        if node.initial is None:
+            end = self.execute(node.final)
+            return lvalue_table.table[var_name][:end]
+        elif node.final is None:
+            start = self.execute(node.initial)
+            return lvalue_table.table[var_name][start:]
+        else:
+            start = self.execute(node.initial)
+            end = self.execute(node.final)
+            return lvalue_table.table[var_name][start:end]

@@ -40,14 +40,11 @@ for (var epoch: number in range(20000)) {
 
         # Fase de feedforward
         var hidden_layer_input: list = []
-        for (var i: number in range(2)){
-            var linha: list = []
-            for (var j: number in range(3)){
-                linha.append(random())
+        for (var k: number in range(3)) {
+            for (var j: number in range(2)) {
+                hidden_layer_input.append(inputs[i][j] * weights_input_hidden[j][k])
             }
-            weights_input_hidden.append(linha)
-        }
-
+        }      
 
         var hidden_layer_output: list = [for (var i: number in range(3)) -> sigmoid(sum(hidden_layer_input[i * 2 : (i + 1) * 2]) + bias_hidden[i])]
         var output_layer_input: number = sum([for (var j: number in range(3)) -> hidden_layer_output[j] * weights_hidden_output[j]]) + bias_output
@@ -67,9 +64,9 @@ for (var epoch: number in range(20000)) {
 
         for (var j: number in range(2)){
             for (var k: number in range(3)){
-                debug("ok")
+                # debug("ok")
                 weights_input_hidden[j][k] = weights_input_hidden[j][k] + inputs[i][j] * d_hidden_layer[k] * learning_rate
-                debug("ok")
+                # debug("ok")
                 bias_hidden[k] =  bias_hidden[k] + d_hidden_layer[k] * learning_rate
             }
         }
@@ -79,8 +76,8 @@ for (var epoch: number in range(20000)) {
 # Testando a rede neural treinada
 for (var i: number in range(len(inputs))) {
     var hidden_layer_input: list = []
-    for (var j: number in range(2)) {
-        for (var k: number in range(3)){
+    for (var k: number in range(3)) {
+        for (var j: number in range(2)) {
             hidden_layer_input.append(inputs[i][j] * weights_input_hidden[j][k])
         }
     }
