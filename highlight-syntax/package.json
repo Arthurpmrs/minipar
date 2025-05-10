@@ -1,0 +1,42 @@
+{
+  "name": "minipar-lang",
+  "displayName": "Minipar Lang",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Themes"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "minipar",
+        "aliases": [
+          "Minipar",
+          "minipar"
+        ],
+        "extensions": [
+          ".minipar"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "minipar",
+        "scopeName": "source.minipar",
+        "path": "./syntaxes/minipar.tmLanguage.json"
+      }
+    ],
+    "themes": [
+      {
+        "label": "Minipar Theme",
+        "uiTheme": "vs-dark",
+        "path": "./themes/minipar-theme.json"
+      }
+    ]
+  }
+}

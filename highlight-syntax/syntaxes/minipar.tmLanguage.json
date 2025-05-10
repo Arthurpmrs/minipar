@@ -1,0 +1,53 @@
+{
+  "scopeName": "source.minipar",
+  "name": "Minipar",
+  "patterns": [
+    {
+      "match": "#.*$",
+      "name": "comment.line.number-sign.minipar"
+    },
+    {
+      "begin": "/\\*",
+      "end": "\\*/",
+      "name": "comment.block.minipar"
+    },
+    {
+      "match": "\\b(func|var|return|if|else|for|while|break|continue|in)\\b",
+      "name": "keyword.control.minipar"
+    },
+    {
+      "match": "\\b(true|false|null)\\b",
+      "name": "constant.language.minipar"
+    },
+    {
+      "match": "\\b(number|string|list|dict|any|void|c_channel|s_channel)\\b",
+      "name": "storage.type.minipar"
+    },
+    {
+      "match": "\\b(print|input|contains|intersection|sum|sqrt|pow|append|sort|strip|lower|keys|isEmpty|send)\\b",
+      "name": "support.function.builtin.minipar"
+    },
+    {
+      "match": "\"([^\"\\\\]|\\\\.)*\"",
+      "name": "string.quoted.double.minipar"
+    },
+    {
+      "match": "\\b\\d+(\\.\\d+)?\\b",
+      "name": "constant.numeric.minipar"
+    },
+    {
+      "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b",
+      "name": "variable.other.minipar"
+    },
+    {
+      "match": "->",
+      "name": "keyword.operator.arrow.minipar"
+    },
+    {
+      "match": "[=+\\-*/%!<>]+",
+      "name": "keyword.operator.minipar"
+    }
+  ],
+  "fileTypes": ["mpr"],
+  "uuid": "minipar-0001"
+}
