@@ -1,0 +1,149 @@
+# Histórico de compras do usuário
+var user_purchase_history: list = ["Smartphone", "Jeans", "Micro-ondas", "Ficção"]
+
+# Categorias de produtos e seus itens
+var product_categories: dict = {
+    "Eletrônicos": ["Smartphone", "Laptop", "Tablet", "Fones de ouvido"],
+    "Roupas": ["Camisa", "Jeans", "Jaqueta", "Sapatos"],
+    "Eletrodomésticos": [
+        "Geladeira",
+        "Micro-ondas",
+        "Máquina de lavar",
+        "Ar condicionado",
+    ],
+    "Livros": ["Ficção", "Não-ficção", "Ficção científica", "Fantasia"],
+}
+
+func index(product_list: list, target_product: string) -> number {
+    var product_index: number
+    for (var i: number in range(len(product_list))) {
+        if (product_list[i] == target_product) {
+            product_index = i
+            break
+        }
+    }
+    return product_index
+}
+
+# Função para codificar o histórico de compras do usuário
+func encode_purchase_history(user_purchase_history: list, product_categories: dict) -> list {
+    var all_products: list = []
+    for (var category: string in product_categories) {
+        for (var product: string in product_categories[category]) {
+            all_products.append(product)
+        }
+    }
+    var encoded_history: list = [for(var i: number in range(len(all_products))) -> 0]
+
+    for(var product: string in user_purchase_history) {
+        if (contains(all_products, product)){
+            encoded_history[index(all_products, product)] = 1
+        }
+    }
+    return encoded_history
+}
+
+# Função para criar a rede neural
+func create_neural_network(input_size: number, hidden_size: number , output_size: number) -> list {
+    var W1: list = []
+    for (var i: number in range(input_size)) {
+        var row: list = []
+        for (var j: number in range(hidden_size)) {
+            row.append(0.5)
+        }
+        W1.append(row)
+    }
+    var b1: list  = [for(var i: number in range(hidden_size)) -> 0.5]
+    var W2: list = []
+    for (var i: number in range(hidden_size)) {
+        var row: list = []
+        for (var j: number in range(output_size)) {
+            row.append(0.5)
+        }
+        W2.append(row)
+    }
+    var b2: list  = [for(var i: number in range(output_size)) -> 0.5]
+
+    return [W1, b1, W2, b2]
+}
+
+func max(initial: number, final: number) -> number {
+    if (initial > final) {
+        return initial
+    } else {
+        return final
+    }
+}
+
+# Função para ativação ReLU
+func relu(x: list) -> list {   
+    var res: list = [for(var i: any in x) -> max(0, i)]
+    return res
+}
+
+# Função para ativação Sigmoid
+func sigmoid(x: list) -> list {
+    var res: list = [for(var i: any in x) -> 1 / (1 + exp(-i))]
+    return res
+}
+
+# Função para a propagação da rede neural
+func forward_propagation(X: list, W1: list, b1: list, W2: list, b2: list) -> list {
+    var Z1: list = []
+    for(var i: number in range(len(b1))){
+        var soma: number = sum([for(var j: number in range(len(X))) -> X[j] * W1[j][i]])
+        Z1.append(soma + b1[i])
+    }
+
+    var A1: list = relu(Z1)
+    var Z2: list = []
+    for(var i: number in range(len(b2))){
+        var soma: number = sum([for(var j: number in range(len(A1))) -> A1[j] * W2[j][i]])
+        Z2.append(soma + b2[i])
+    }
+
+    var A2: list = sigmoid(Z2)
+    return A2
+}
+
+# Função para recomendar produtos
+func recommend_products(user_purchase_history: list, product_categories: dict) -> list {
+    var encoded_history: list = encode_purchase_history(user_purchase_history, product_categories)
+
+    var input_size: number = len(encoded_history)
+    var hidden_size: number = 10  # Tamanho da camada oculta
+    var output_size: number = len(encoded_history)
+
+    var res: list = create_neural_network(input_size, hidden_size, output_size)
+    var W1: list = res[0]
+    var b1: list = res[1]
+    var W2: list = res[2]
+    var b2: list = res[3]
+
+    var recommendations_encoded: list = forward_propagation(encoded_history, W1, b1, W2, b2)
+    
+    var all_products: list = []
+    for (var category: string in product_categories) {
+        for (var product: string in product_categories[category]) {
+            all_products.append(product)
+        }
+    }
+
+    var recommendations: list = []
+    for (var i: number in range(len(all_products))) {
+        if (recommendations_encoded[i] > 0.5 && !contains(user_purchase_history, all_products[i])) {
+            recommendations.append(all_products[i])
+        }
+    }
+
+    return recommendations
+}
+
+var recommendations: list = recommend_products(user_purchase_history, product_categories)
+
+# Imprimir as recomendações
+print("Produtos recomendados para você:")
+for (var product: any in recommendations){   
+    print(product)
+}
+
