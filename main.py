@@ -7,7 +7,7 @@ from minipar.runner import RunnerImpl
 from minipar.semantic import SemanticImpl
 
 if __name__ == '__main__':
-    path_to_source = './examples/minipar/ex4.minipar'
+    path_to_source = './examples/minipar/recomendacao2.minipar'
 
     with open(path_to_source, 'r', encoding='utf-8') as f:
         source = f.read()
