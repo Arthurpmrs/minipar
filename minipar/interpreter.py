@@ -1,27 +1,56 @@
+import io
+import sys
 from abc import ABC, abstractmethod
-from pathlib import Path
+from contextlib import contextmanager, redirect_stderr, redirect_stdout
+
+from minipar.lexer import LexerImpl
+from minipar.parser import ParserImpl
+from minipar.runner import RunnerImpl
+from minipar.semantic import SemanticImpl
+
+
+@contextmanager
+def redirect_stdin(new_stdin):
+    old_stdin = sys.stdin
+    sys.stdin = new_stdin
+    try:
+        yield
+    finally:
+        sys.stdin = old_stdin
 
 
 class Interpreter(ABC):
     @abstractmethod
-    def run(path_to_source: Path) -> str:
+    def run(self, source: str) -> str:
         pass
 
 
 class Minipar(Interpreter):
-    def run(path_to_source: Path) -> str:
-        if not path_to_source.is_file():
-            raise Exception('There is no file.')
-
-        with open(path_to_source, 'r', encoding='utf-8') as f:
-            source = f.read()
-
+    def run(self, source: str, input_data: str = '') -> str:
         if not source:
-            raise Exception('The file is empty.')
+            raise Exception('Não há código para executar.')
 
-        # lexer (generate tokens)
-        # Parser (generate ast)
-        # Semantic (validate ast)
-        # Runner (execute based on ast)
+        input_buffer = io.StringIO(input_data)
+        output_buffer = io.StringIO()
+        with (
+            redirect_stdout(output_buffer),
+            redirect_stderr(output_buffer),
+            redirect_stdin(input_buffer),
+        ):
+            try:
+                lexer = LexerImpl(source)
 
-        return ''
+                parser = ParserImpl(lexer)
+                ast = parser.start()
+
+                semantic = SemanticImpl()
+                semantic.visit(ast)
+
+                runner = RunnerImpl()
+                runner.run(ast)
+            except EOFError:
+                print('[erro] Fim da entrada alcançado.')
+            except Exception as e:
+                print(f'[erro] {e}')
+
+        return output_buffer.getvalue()

@@ -26,6 +26,15 @@ DEFAULT_FUNCTION_NAMES = {
     'random': 'NUMBER',
     'intersection': 'LIST',
     'contains': 'BOOL',
+    'listen': 'VOID',
+    'append': 'VOID',
+    'sort': 'VOID',
+    'strip': 'STRING',
+    'lower': 'STRING',
+    'debug': 'VOID',
+    'items': 'LIST',
+    'keys': 'LIST',
+    'split': 'LIST',
 }
 
 STATEMENT_TOKENS = {
@@ -60,14 +69,14 @@ class ParserImpl(Parser):  # noqa: PLR0904
     def __init__(self, lexer: Lexer):
         self.token_generator: NextToken = lexer.scan()
         self.lookahead, self.line = next(self.token_generator)
-        print(self.lookahead, self.line)
+        # self.lookahead, self.line)
         self.symtable = SymTable()
         for func_name in DEFAULT_FUNCTION_NAMES.keys():
             self.symtable.insert(func_name, Symbol(func_name, 'FUNC'))
 
     def match(self, label: str) -> bool:
         if label == self.lookahead.label:
-            print(self.lookahead, self.line)
+            # self.lookahead, self.line)
             # Se label corresponde, tenta pegar o próximo token
             # ou retorna Token de EOF
             try:
@@ -597,7 +606,11 @@ class ParserImpl(Parser):  # noqa: PLR0904
             if self.lookahead.label != 'RIGHT_BRACKET':
                 final = self.sum()
             return ast.Slice(
-                type=ID.type, token=ID.token, initial=initial, final=final
+                type=ID.type,
+                token=ID.token,
+                initial=initial,
+                final=final,
+                id=ID,
             )
 
         initial = self.sum()
@@ -606,7 +619,11 @@ class ParserImpl(Parser):  # noqa: PLR0904
             if self.lookahead.label != 'RIGHT_BRACKET':
                 final = self.sum()
             return ast.Slice(
-                type=ID.type, token=ID.token, initial=initial, final=final
+                type=ID.type,
+                token=ID.token,
+                initial=initial,
+                final=final,
+                id=ID,
             )
 
         return ast.Access(ID.type, ID.token, ID, initial)

@@ -20,7 +20,7 @@ func soma(num1: number, num2: number) -> number
   return num1 + num2
 }
 
-var res: number = soma(1 && 2, (3 + 4)*6)
+var res: number = soma(2, (3 + 4)*6)
 print("res =", res)
 
 /* PARTE 2 */

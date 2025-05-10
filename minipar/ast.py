@@ -88,6 +88,7 @@ class Call(Expression):
 
 @dataclass
 class Slice(Expression):
+    id: ID
     initial: Expression | None = None
     final: Expression | None = None
 
@@ -196,6 +197,7 @@ class Channel(Statement):
 class SChannel(Channel):
     func_name: str
     description: Expression
+
 
 
 @dataclass
