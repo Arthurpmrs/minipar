@@ -8,7 +8,7 @@
     "editor.lineHighlightBackground": "#2A2A2A",
     "editor.selectionBackground": "#264F78"
   },
-    "tokenColors": [
+  "tokenColors": [
     {
       "scope": "comment.line.number-sign.minipar",
       "settings": {
@@ -76,6 +76,13 @@
       "scope": "keyword.operator.minipar",
       "settings": {
         "foreground": "#D16969"
+      }
+    },
+    {
+      "scope": "entity.name.function.minipar",
+      "settings": {
+        "foreground": "#DCDCAA",
+        "fontStyle": "bold"
       }
     }
   ]

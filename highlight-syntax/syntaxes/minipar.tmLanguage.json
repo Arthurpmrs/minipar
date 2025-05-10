@@ -12,7 +12,7 @@
       "name": "comment.block.minipar"
     },
     {
-      "match": "\\b(func|var|return|if|else|for|while|break|continue)\\b",
+      "match": "\\b(func|var|return|if|else|for|while|break|continue|in)\\b",
       "name": "keyword.control.minipar"
     },
     {
@@ -20,7 +20,7 @@
       "name": "constant.language.minipar"
     },
     {
-      "match": "\\b(number|string|list|dict|void|c_channel|s_channel)\\b",
+      "match": "\\b(number|string|list|dict|any|void|c_channel|s_channel)\\b",
       "name": "storage.type.minipar"
     },
     {
