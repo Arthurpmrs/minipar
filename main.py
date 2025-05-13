@@ -7,7 +7,8 @@ from minipar.runner import RunnerImpl
 from minipar.semantic import SemanticImpl
 
 if __name__ == '__main__':
-    path_to_source = './examples/minipar/recomendacao2.minipar'
+    filename = input('Digite o nome do arquivo de exemplo: ')
+    path_to_source = f'./examples/minipar/{filename}.minipar'
 
     with open(path_to_source, 'r', encoding='utf-8') as f:
         source = f.read()
